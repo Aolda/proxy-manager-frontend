@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Link } from 'react-router';
 import { useAuthStore } from '@/stores/authStore';
-import { Router, ShieldCheck, HardDrive, CircleHelp } from 'lucide-react';
+import { ArrowLeftRight, ShieldCheck, Server, TextSearch, CircleHelp } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -20,10 +20,10 @@ const data = {
   projects: ['aolda_edu', 'proxy_manager', 'blog'],
   menus: [
     {
-      title: '웹 프록시 설정',
+      title: '웹 프록시 서버',
       items: [
         {
-          icon: Router,
+          icon: ArrowLeftRight,
           title: '라우팅 설정',
           url: '#',
           isActive: true,
@@ -40,8 +40,19 @@ const data = {
       title: 'SSH 포트포워딩',
       items: [
         {
-          icon: HardDrive,
+          icon: Server,
           title: 'SSH 설정',
+          url: '#',
+          isActive: false,
+        },
+      ],
+    },
+    {
+      title: '로그',
+      items: [
+        {
+          icon: TextSearch,
+          title: '설정 변경 내역',
           url: '#',
           isActive: false,
         },
