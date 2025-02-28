@@ -1,7 +1,10 @@
 import * as React from 'react';
+import { Link } from 'react-router';
+import { Router, ShieldCheck, HardDrive, CircleHelp } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -19,11 +22,13 @@ const data = {
       title: '웹 프록시 설정',
       items: [
         {
+          icon: Router,
           title: '라우팅 설정',
           url: '#',
           isActive: true,
         },
         {
+          icon: ShieldCheck,
           title: 'SSL 인증서',
           url: '#',
           isActive: false,
@@ -31,9 +36,10 @@ const data = {
       ],
     },
     {
-      title: 'SSH 포트 포워딩',
+      title: 'SSH 포트포워딩',
       items: [
         {
+          icon: HardDrive,
           title: 'SSH 설정',
           url: '#',
           isActive: false,
@@ -58,7 +64,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 {item.items.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild isActive={item.isActive}>
-                      <a href={item.url}>{item.title}</a>
+                      <Link to={item.url}>
+                        <item.icon />
+                        {item.title}
+                      </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
@@ -67,6 +76,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarGroup>
         ))}
       </SidebarContent>
+      <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild>
+              <Link to={import.meta.env.VITE_SUPPORT_URL}>
+                <CircleHelp className="mr-2" />
+                문의하기
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
     </Sidebar>
   );
 }

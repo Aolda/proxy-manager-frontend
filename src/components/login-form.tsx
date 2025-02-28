@@ -29,7 +29,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
             </div>
             <div className="mt-4 text-center text-sm">
               계정이 없으신가요?
-              <a href="#" className="ml-2 underline underline-offset-4">
+              <a href={import.meta.env.VITE_SUPPORT_URL} className="ml-2 underline underline-offset-4">
                 아올다 프로젝트 신청하기
               </a>
             </div>
