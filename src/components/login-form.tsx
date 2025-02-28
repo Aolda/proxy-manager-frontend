@@ -1,10 +1,32 @@
+import React from 'react';
+import { useNavigate } from 'react-router';
 import { cn } from '@/lib/utils';
+import { useAuthStore } from '@/stores/authStore';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
+  const { login } = useAuthStore();
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const username = formData.get('username') as string;
+    const password = formData.get('password') as string;
+
+    try {
+      await login(username, password);
+      navigate('/');
+    } catch (err) {
+      console.error(err);
+      toast.error('로그인에 실패했습니다');
+    }
+  };
+
   return (
     <div className={cn('flex flex-col gap-6', className)} {...props}>
       <Card>
@@ -13,15 +35,15 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
           <CardDescription>아올다 통합 계정을 사용하여 로그인합니다</CardDescription>
         </CardHeader>
         <CardContent>
-          <form>
+          <form onSubmit={handleSubmit}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-2">
                 <Label htmlFor="username">사용자 이름</Label>
-                <Input id="username" type="text" placeholder="사용자 이름" required />
+                <Input id="username" name="username" type="text" placeholder="사용자 이름" required />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="password">비밀번호</Label>
-                <Input id="password" type="password" placeholder="비밀번호" required />
+                <Input id="password" name="password" type="password" placeholder="비밀번호" required />
               </div>
               <Button type="submit" className="w-full">
                 로그인

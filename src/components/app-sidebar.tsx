@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { Link } from 'react-router';
+import { useAuthStore } from '@/stores/authStore';
 import { Router, ShieldCheck, HardDrive, CircleHelp } from 'lucide-react';
 import {
   Sidebar,
@@ -50,11 +51,15 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { token } = useAuthStore();
+
   return (
     <Sidebar className="top-(--header-height) h-[calc(100svh-var(--header-height))]!" {...props}>
-      <SidebarHeader>
-        <ProjectSwitcher projects={data.projects} defaultProject={data.projects[0]} />
-      </SidebarHeader>
+      {token ? (
+        <SidebarHeader>
+          <ProjectSwitcher projects={data.projects} defaultProject={data.projects[0]} />
+        </SidebarHeader>
+      ) : null}
       <SidebarContent>
         {data.menus.map((item) => (
           <SidebarGroup key={item.title}>
@@ -63,7 +68,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <SidebarMenu>
                 {item.items.map((item) => (
                   <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild isActive={item.isActive}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={item.isActive}
+                      className={token ? '' : 'cursor-not-allowed opacity-50'}
+                    >
                       <Link to={item.url}>
                         <item.icon />
                         {item.title}

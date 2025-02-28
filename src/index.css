@@ -12,7 +12,6 @@
 }
 
 :root {
-  font-family: 'Pretendard', sans-serif;
   --background: oklch(1 0 0);
   --foreground: oklch(0.129 0.042 264.695);
   --card: oklch(1 0 0);
@@ -125,9 +124,20 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    font-family: 'Pretendard', sans-serif;
   }
 
   body {
     @apply bg-background text-foreground;
+  }
+
+  button,
+  [role='button'] {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  [role='button']:disabled {
+    cursor: default;
   }
 }

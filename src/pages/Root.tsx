@@ -1,4 +1,5 @@
-import { Link, Outlet } from 'react-router';
+import { Outlet } from 'react-router';
+import { Toaster } from '@/components/ui/sonner';
 import { AppSidebar } from '@/components/app-sidebar';
 import { SiteHeader } from '@/components/site-header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
@@ -15,6 +16,7 @@ export default function Root() {
           </SidebarInset>
         </div>
       </SidebarProvider>
+      <Toaster />
     </div>
   );
 }
