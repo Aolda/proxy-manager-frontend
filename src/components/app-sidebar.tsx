@@ -25,13 +25,13 @@ const data = {
         {
           icon: ArrowLeftRight,
           title: '라우팅 설정',
-          url: '#',
+          url: 'routing',
           isActive: true,
         },
         {
           icon: ShieldCheck,
           title: 'SSL 인증서',
-          url: '#',
+          url: 'certificate',
           isActive: false,
         },
       ],
@@ -42,7 +42,7 @@ const data = {
         {
           icon: Server,
           title: 'SSH 설정',
-          url: '#',
+          url: 'forwarding',
           isActive: false,
         },
       ],
@@ -53,7 +53,7 @@ const data = {
         {
           icon: TextSearch,
           title: '설정 변경 내역',
-          url: '#',
+          url: 'log',
           isActive: false,
         },
       ],

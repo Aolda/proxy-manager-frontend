@@ -33,7 +33,7 @@ const logs = [
 export default function Home() {
   return (
     <div className="flex flex-1 flex-col gap-4 p-6">
-      <h1 className="scroll-m-20 text-3xl font-semibold first:mt-0">Aolda Proxy Manager</h1>
+      <h1 className="scroll-m-20 text-3xl font-semibold first:mt-0 mb-2">Aolda Proxy Manager</h1>
       <div className="grid auto-rows-min gap-4 md:grid-cols-3">
         <Card>
           <CardHeader>
