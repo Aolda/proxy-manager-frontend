@@ -6,6 +6,7 @@ import Login from '@/pages/Login';
 import RoutingList from '@/pages/routing/List';
 import RoutingCreate from '@/pages/routing/Create';
 import ForwardingList from '@/pages/forwarding/List';
+import ForwardingCreate from './pages/forwarding/Create';
 
 export default function AppRoutes() {
   return (
@@ -19,6 +20,7 @@ export default function AppRoutes() {
         </Route>
         <Route path="forwarding">
           <Route index element={<ForwardingList />} />
+          <Route path="create" element={<ForwardingCreate />} />
         </Route>
         <Route path="*" element={<NotFound />} />
       </Route>
