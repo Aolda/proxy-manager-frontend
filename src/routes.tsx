@@ -4,6 +4,7 @@ import NotFound from '@/pages/NotFound';
 import Home from '@/pages/Home';
 import Login from '@/pages/Login';
 import RoutingList from '@/pages/routing/List';
+import RoutingCreate from '@/pages/routing/Create';
 
 export default function AppRoutes() {
   return (
@@ -13,6 +14,7 @@ export default function AppRoutes() {
         <Route path="login" element={<Login />} />
         <Route path="routing">
           <Route index element={<RoutingList />} />
+          <Route path="create" element={<RoutingCreate />} />
         </Route>
         <Route path="*" element={<NotFound />} />
       </Route>

@@ -58,8 +58,10 @@ export default function RoutingList() {
           <h1 className="scroll-m-20 text-3xl font-semibold first:mt-0">웹 라우팅 설정</h1>
           <p className="mt-1 text-base text-gray-500">현재 3개의 웹 프록시가 설정되어 있습니다.</p>
         </div>
-        <Button className="ml-2">
-          <Plus className="h-4 w-4" /> 새 프록시 추가
+        <Button className="ml-2" asChild>
+          <Link to="./create">
+            <Plus className="h-4 w-4" /> 새 프록시 추가
+          </Link>
         </Button>
       </div>
       <Card>
