@@ -77,12 +77,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <SidebarMenu>
                 {item.items.map((item) => (
                   <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={selected === item.url}
-                      className={token ? '' : 'cursor-not-allowed opacity-50'}
-                    >
-                      <Link to={item.url}>
+                    <SidebarMenuButton asChild isActive={selected === item.url}>
+                      <Link to={item.url} aria-disabled={token === null}>
                         <item.icon />
                         {item.title}
                       </Link>
