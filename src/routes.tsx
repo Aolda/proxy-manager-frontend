@@ -6,6 +6,7 @@ import Login from '@/pages/Login';
 import RoutingList from '@/pages/routing/List';
 import RoutingCreate from '@/pages/routing/Create';
 import CertificateList from './pages/certificate/List';
+import CertificateCreate from './pages/certificate/Create';
 import ForwardingList from '@/pages/forwarding/List';
 import ForwardingCreate from './pages/forwarding/Create';
 
@@ -21,6 +22,7 @@ export default function AppRoutes() {
         </Route>
         <Route path="certificate">
           <Route index element={<CertificateList />} />
+          <Route path="create" element={<CertificateCreate />} />
         </Route>
         <Route path="forwarding">
           <Route index element={<ForwardingList />} />
