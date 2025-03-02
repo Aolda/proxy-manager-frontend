@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Link } from 'react-router';
+import { Link, useLocation } from 'react-router';
 import { useAuthStore } from '@/stores/authStore';
 import { ArrowLeftRight, ShieldCheck, Server, TextSearch, CircleHelp } from 'lucide-react';
 import {
@@ -26,13 +26,11 @@ const data = {
           icon: ArrowLeftRight,
           title: '라우팅 설정',
           url: 'routing',
-          isActive: true,
         },
         {
           icon: ShieldCheck,
           title: 'SSL 인증서',
           url: 'certificate',
-          isActive: false,
         },
       ],
     },
@@ -43,7 +41,6 @@ const data = {
           icon: Server,
           title: 'SSH 설정',
           url: 'forwarding',
-          isActive: false,
         },
       ],
     },
@@ -54,7 +51,6 @@ const data = {
           icon: TextSearch,
           title: '설정 변경 내역',
           url: 'log',
-          isActive: false,
         },
       ],
     },
@@ -63,6 +59,8 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { token } = useAuthStore();
+  const location = useLocation();
+  const selected = location.pathname.split('/')[1] || '';
 
   return (
     <Sidebar className="top-(--header-height) h-[calc(100svh-var(--header-height))]!" {...props}>
@@ -81,7 +79,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton
                       asChild
-                      isActive={item.isActive}
+                      isActive={selected === item.url}
                       className={token ? '' : 'cursor-not-allowed opacity-50'}
                     >
                       <Link to={item.url}>
