@@ -1,5 +1,6 @@
 import { useAuthStore } from '@/stores/authStore';
 import { Check, ChevronsUpDown, GalleryVerticalEnd } from 'lucide-react';
+import { toast } from 'sonner';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -7,9 +8,19 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
+import { Project } from '@/types/project';
 
 export function ProjectSwitcher() {
   const { projects, selectedProject, setSelectedProject } = useAuthStore();
+
+  const handleSelectProject = async (project: Project) => {
+    try {
+      await setSelectedProject(project);
+    } catch (error) {
+      console.error(error);
+      toast.error('프로젝트 권한을 조회할 수 없습니다.');
+    }
+  };
 
   return (
     <SidebarMenu>
@@ -38,7 +49,7 @@ export function ProjectSwitcher() {
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]" align="start">
             {projects.map((project) => (
-              <DropdownMenuItem key={project.id} onSelect={() => setSelectedProject(project)}>
+              <DropdownMenuItem key={project.id} onSelect={() => handleSelectProject(project)}>
                 {project.name} {project.id === selectedProject?.id && <Check className="ml-auto" />}
               </DropdownMenuItem>
             ))}

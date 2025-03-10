@@ -7,21 +7,37 @@ export interface AuthStore {
   username: string;
   isAdmin: boolean;
   projects: Project[];
-  selectedProject: Project | null;
-  setSelectedProject: (project: Project) => void;
+  selectedProject: (Project & { role?: string }) | null;
+  setSelectedProject: (project: Project) => Promise<void>;
   login: (username: string, password: string) => void;
   logout: () => void;
 }
 
 export const useAuthStore = create<AuthStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       token: null,
       username: '',
       isAdmin: false,
       projects: [],
       selectedProject: null,
-      setSelectedProject: (project) => set({ selectedProject: project }),
+      setSelectedProject: async (project) => {
+        set({ selectedProject: project });
+        console.log(project);
+
+        const response = await fetch(`/api/auth/role?projectId=${project.id}`, {
+          headers: { 'X-Subject-Token': get().token! },
+        });
+
+        if (!response.ok) {
+          throw new Error('프로젝트 정보를 가져오지 못했습니다.');
+        }
+
+        const { role } = await response.json();
+        set({ selectedProject: { ...project, role } });
+
+        console.log(role);
+      },
       login: async (username, password) => {
         const response = await fetch('/api/auth/login', {
           method: 'POST',
@@ -36,7 +52,8 @@ export const useAuthStore = create<AuthStore>()(
         const token = response.headers.get('X-Subject-Token')!;
         const { isAdmin, projects } = await response.json();
 
-        set({ token, username, isAdmin, projects, selectedProject: projects[0] });
+        set({ token, username, isAdmin, projects });
+        get().setSelectedProject(projects[0]);
       },
       logout: () => set({ token: null, username: '', isAdmin: false, projects: [], selectedProject: null }),
     }),
