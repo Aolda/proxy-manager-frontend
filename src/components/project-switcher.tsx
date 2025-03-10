@@ -1,4 +1,4 @@
-import * as React from 'react';
+import { useAuthStore } from '@/stores/authStore';
 import { Check, ChevronsUpDown, GalleryVerticalEnd } from 'lucide-react';
 import {
   DropdownMenu,
@@ -8,8 +8,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 
-export function ProjectSwitcher({ projects, defaultProject }: { projects: string[]; defaultProject: string }) {
-  const [selectedProject, setSelectedProject] = React.useState(defaultProject);
+export function ProjectSwitcher() {
+  const { projects, selectedProject, setSelectedProject } = useAuthStore();
 
   return (
     <SidebarMenu>
@@ -24,16 +24,22 @@ export function ProjectSwitcher({ projects, defaultProject }: { projects: string
                 <GalleryVerticalEnd className="size-4" />
               </div>
               <div className="flex flex-col gap-0.5 leading-none">
-                <span className="font-semibold">Project</span>
-                <span className="">{selectedProject}</span>
+                {selectedProject ? (
+                  <>
+                    <span className="font-semibold">Project</span>
+                    <span>{selectedProject.name}</span>
+                  </>
+                ) : (
+                  <span className="text-muted-foreground">프로젝트를 선택해주세요</span>
+                )}
               </div>
               <ChevronsUpDown className="ml-auto" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]" align="start">
             {projects.map((project) => (
-              <DropdownMenuItem key={project} onSelect={() => setSelectedProject(project)}>
-                {project} {project === selectedProject && <Check className="ml-auto" />}
+              <DropdownMenuItem key={project.id} onSelect={() => setSelectedProject(project)}>
+                {project.name} {project.id === selectedProject?.id && <Check className="ml-auto" />}
               </DropdownMenuItem>
             ))}
           </DropdownMenuContent>

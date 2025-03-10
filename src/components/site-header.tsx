@@ -16,7 +16,7 @@ import {
 export function SiteHeader() {
   const navigate = useNavigate();
   const { toggleSidebar } = useSidebar();
-  const { token, logout } = useAuthStore();
+  const { token, username, logout } = useAuthStore();
 
   const handleLogout = () => {
     logout();
@@ -36,11 +36,11 @@ export function SiteHeader() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild className="ml-auto cursor-pointer">
               <Avatar className="w-10 h-10 border">
-                <AvatarFallback>{'admin'.charAt(0)}</AvatarFallback>
+                <AvatarFallback>{username.charAt(0)}</AvatarFallback>
               </Avatar>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>닉네임</DropdownMenuLabel>
+              <DropdownMenuLabel>{username}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
                 <LogOut />

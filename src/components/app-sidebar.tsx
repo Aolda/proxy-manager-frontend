@@ -17,7 +17,6 @@ import {
 import { ProjectSwitcher } from '@/components/project-switcher';
 
 const data = {
-  projects: ['aolda_edu', 'proxy_manager', 'blog'],
   menus: [
     {
       title: '웹 프록시 서버',
@@ -58,15 +57,15 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { token } = useAuthStore();
+  const { token, selectedProject } = useAuthStore();
   const location = useLocation();
   const selected = location.pathname.split('/')[1] || '';
 
   return (
     <Sidebar className="top-(--header-height) h-[calc(100svh-var(--header-height))]!" {...props}>
-      {token ? (
+      {token && selectedProject ? (
         <SidebarHeader>
-          <ProjectSwitcher projects={data.projects} defaultProject={data.projects[0]} />
+          <ProjectSwitcher />
         </SidebarHeader>
       ) : null}
       <SidebarContent>
@@ -78,7 +77,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 {item.items.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild isActive={selected === item.url}>
-                      <Link to={item.url} aria-disabled={token === null}>
+                      <Link to={item.url} aria-disabled={!token || !selectedProject}>
                         <item.icon />
                         {item.title}
                       </Link>
