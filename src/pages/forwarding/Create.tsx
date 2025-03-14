@@ -1,20 +1,21 @@
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { useAuthStore } from '@/stores/authStore';
 
 const formSchema = z.object({
   name: z.string({ required_error: '서버 이름을 입력해주세요' }).min(1, { message: '서버 이름을 입력해주세요' }),
-  port: z
+  serverPort: z
     .number({ required_error: '도메인 주소를 입력해주세요' })
     .min(20000, { message: '포트 번호는 20000 이상이어야 합니다' })
     .max(29999, { message: '포트 번호는 29999 이하여야 합니다' }),
-  instance_ip: z
+  instanceIp: z
     .string({ required_error: '인스턴스 IP를 입력해주세요' })
     .regex(/^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$/, {
       message: '올바른 IP 주소를 입력해주세요',
@@ -23,18 +24,50 @@ const formSchema = z.object({
 });
 
 export default function ForwardingCreate() {
+  const navigate = useNavigate();
+  const { selectedProject } = useAuthStore();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
-      port: undefined,
-      instance_ip: '',
+      serverPort: undefined,
+      instanceIp: '',
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log('제출된 데이터:', values);
-    toast.warning('포트포워딩 설정을 등록합니다');
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    const { name, serverPort, instanceIp } = values;
+
+    const response = await fetch(`/api/forwarding?projectId=${selectedProject?.id}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name,
+        serverPort,
+        instanceIp,
+        instancePort: 22,
+      }),
+    });
+
+    if (!response.ok) {
+      console.error(response);
+
+      const { code } = await response.json();
+      if (code == 'DUPLICATED_INSTANCE_INFO') {
+        form.setError('instanceIp', { type: 'custom' });
+        toast.error('이미 존재하는 포트포워딩 설정입니다');
+      } else if (code == 'DUPLICATED_SERVER_PORT') {
+        form.setError('serverPort', { type: 'custom' });
+        toast.error('이미 사용 중인 포트 번호입니다');
+      } else {
+        toast.error('포트포워딩 설정 등록에 실패했습니다');
+      }
+    } else {
+      toast.success('포트포워딩 설정이 등록되었습니다');
+      navigate('/forwarding');
+    }
   }
 
   return (
@@ -68,7 +101,7 @@ export default function ForwardingCreate() {
 
                 <FormField
                   control={form.control}
-                  name="port"
+                  name="serverPort"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel required>포트 번호</FormLabel>
@@ -90,7 +123,7 @@ export default function ForwardingCreate() {
 
                 <FormField
                   control={form.control}
-                  name="instance_ip"
+                  name="instanceIp"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel required>인스턴스 IP</FormLabel>
