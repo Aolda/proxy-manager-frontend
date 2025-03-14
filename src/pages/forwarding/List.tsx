@@ -10,10 +10,21 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/h
 import { Input } from '@/components/ui/input';
 import { Forwarding } from '@/types/forwarding';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+} from '@/components/ui/alert-dialog';
 
 export default function ForwardingList() {
   const { selectedProject } = useAuthStore();
   const [forwardings, setForwardings] = useState<Forwarding[] | null>(null);
+  const [selectedForwarding, setSelectedForwarding] = useState<Forwarding | null>(null);
 
   useEffect(() => {
     fetch(`/api/forwardings?projectId=${selectedProject?.id}`)
@@ -29,6 +40,24 @@ export default function ForwardingList() {
         setForwardings(contents);
       });
   }, [selectedProject]);
+
+  const handleDelete = () => {
+    if (selectedForwarding === null) throw Error('selectedForwarding is null');
+
+    fetch(`/api/forwarding?forwardingId=${selectedForwarding.id}`, {
+      method: 'DELETE',
+    }).then((response) => {
+      if (!response.ok) {
+        console.error(response);
+        toast.error('포트포워딩 설정 삭제에 실패했습니다');
+      } else {
+        toast.warning('포트포워딩 설정이 삭제되었습니다');
+        setForwardings((prev) => prev!.filter((forwarding) => forwarding.id !== selectedForwarding.id));
+      }
+    });
+
+    setSelectedForwarding(null);
+  };
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-6">
@@ -120,10 +149,12 @@ export default function ForwardingList() {
                             <Pencil />
                           </Link>
                         </Button>
-                        <Button variant="secondary" className="size-8">
-                          <Link to={`./delete/${forwarding.id}`}>
-                            <Trash />
-                          </Link>
+                        <Button
+                          variant="secondary"
+                          className="size-8"
+                          onClick={() => setSelectedForwarding(forwarding)}
+                        >
+                          <Trash />
                         </Button>
                       </div>
                     </TableCell>
@@ -134,6 +165,21 @@ export default function ForwardingList() {
           </Table>
         </CardContent>
       </Card>
+
+      <AlertDialog open={selectedForwarding !== null} onOpenChange={(open) => open || setSelectedForwarding(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>포트포워딩 설정 삭제</AlertDialogTitle>
+            <AlertDialogDescription>
+              정말 '{selectedForwarding?.name}' 포트포워딩 설정을 삭제하시겠습니까?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>취소</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete}>삭제</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
