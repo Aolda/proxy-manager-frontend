@@ -25,7 +25,7 @@ const formSchema = z.object({
 
 export default function ForwardingCreate() {
   const navigate = useNavigate();
-  const { selectedProject } = useAuthStore();
+  const { authFetch, selectedProject } = useAuthStore();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -38,7 +38,7 @@ export default function ForwardingCreate() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     const { name, serverPort, instanceIp } = values;
 
-    const response = await fetch(`/api/forwarding?projectId=${selectedProject?.id}`, {
+    const response = await authFetch(`/api/forwarding?projectId=${selectedProject?.id}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

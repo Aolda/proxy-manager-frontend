@@ -9,6 +9,7 @@ export interface AuthStore {
   projects: Project[];
   selectedProject: (Project & { role?: string }) | null;
   setSelectedProject: (project: Project) => Promise<void>;
+  authFetch: (input: RequestInfo, init?: RequestInit) => Promise<Response>;
   login: (username: string, password: string) => void;
   logout: () => void;
 }
@@ -38,6 +39,11 @@ export const useAuthStore = create<AuthStore>()(
 
         console.log(role);
       },
+      authFetch: async (input, init) =>
+        fetch(input, {
+          ...init,
+          headers: { ...init?.headers, 'X-Subject-Token': get().token! },
+        }),
       login: async (username, password) => {
         const response = await fetch('/api/auth/login', {
           method: 'POST',

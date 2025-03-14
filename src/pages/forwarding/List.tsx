@@ -22,12 +22,12 @@ import {
 } from '@/components/ui/alert-dialog';
 
 export default function ForwardingList() {
-  const { selectedProject } = useAuthStore();
+  const { authFetch, selectedProject } = useAuthStore();
   const [forwardings, setForwardings] = useState<Forwarding[] | null>(null);
   const [selectedForwarding, setSelectedForwarding] = useState<Forwarding | null>(null);
 
   useEffect(() => {
-    fetch(`/api/forwardings?projectId=${selectedProject?.id}`)
+    authFetch(`/api/forwardings?projectId=${selectedProject?.id}`)
       .then((response) => {
         if (!response.ok) {
           toast.error('포트포워딩 정보를 조회할 수 없습니다.');
@@ -39,12 +39,12 @@ export default function ForwardingList() {
       .then(({ contents }) => {
         setForwardings(contents);
       });
-  }, [selectedProject]);
+  }, [authFetch, selectedProject]);
 
   const handleDelete = () => {
     if (selectedForwarding === null) throw Error('selectedForwarding is null');
 
-    fetch(`/api/forwarding?forwardingId=${selectedForwarding.id}`, {
+    authFetch(`/api/forwarding?forwardingId=${selectedForwarding.id}`, {
       method: 'DELETE',
     }).then((response) => {
       if (!response.ok) {
