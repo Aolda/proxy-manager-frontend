@@ -1,53 +1,47 @@
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router';
 import { Filter, Plus, Pencil, Trash } from 'lucide-react';
+import { toast } from 'sonner';
+import { useAuthStore } from '@/stores/authStore';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import { Input } from '@/components/ui/input';
-import { Link } from 'react-router';
-
-const forwardings = [
-  {
-    id: 1,
-    name: '아올다 프록시 매니저 콘솔',
-    created_at: '2021-09-01 11:43:00',
-    updated_at: '2021-09-01 12:00:00',
-    port: 20444,
-    instance_ip: '10.16.0.10',
-  },
-  {
-    id: 2,
-    name: '아올다 블로그',
-    created_at: '2021-09-01 12:00:00',
-    updated_at: '2021-09-01 12:01:00',
-    port: 22222,
-    instance_ip: '10.16.0.11',
-  },
-  {
-    id: 3,
-    name: '개인 블로그',
-    created_at: '2021-09-01 12:01:00',
-    updated_at: '2021-09-01 13:00:00',
-    port: 20411,
-    instance_ip: '10.16.3.23',
-  },
-  {
-    id: 4,
-    name: '아올다 테스트 서버',
-    created_at: '2021-09-01 13:00:00',
-    updated_at: '2021-09-02 12:00:00',
-    port: 20432,
-    instance_ip: '10.16.32.1',
-  },
-];
+import { Forwarding } from '@/types/forwarding';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function ForwardingList() {
+  const { selectedProject } = useAuthStore();
+  const [forwardings, setForwardings] = useState<Forwarding[] | null>(null);
+
+  useEffect(() => {
+    fetch(`/api/forwardings?projectId=${selectedProject?.id}`)
+      .then((response) => {
+        if (!response.ok) {
+          toast.error('포트포워딩 정보를 조회할 수 없습니다.');
+          return { forwardings: [] };
+        }
+
+        return response.json();
+      })
+      .then(({ contents }) => {
+        setForwardings(contents);
+      });
+  }, [selectedProject]);
+
   return (
     <div className="flex flex-1 flex-col gap-4 p-6">
       <div className="flex justify-between mb-2">
         <div>
           <h1 className="scroll-m-20 text-3xl font-semibold first:mt-0">SSH 포트포워딩 설정</h1>
-          <p className="mt-1 text-base text-gray-500">현재 4개의 SSH 포트포워딩이 설정되어 있습니다.</p>
+          {forwardings === null ? (
+            <Skeleton className="w-[24rem] h-[1rem] mt-2 rounded-full" />
+          ) : (
+            <p className="mt-1 text-base text-gray-500">
+              현재 {forwardings?.length}개의 SSH 포트포워딩이 설정되어 있습니다.
+            </p>
+          )}
         </div>
         <Button className="ml-2" asChild>
           <Link to="./create">
@@ -72,43 +66,70 @@ export default function ForwardingList() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {forwardings.map((forwarding) => (
-                <TableRow key={forwarding.id}>
-                  <TableCell className="truncate max-w-48">
-                    <HoverCard>
-                      <HoverCardTrigger>{forwarding.name}</HoverCardTrigger>
-                      <HoverCardContent className="w-80 whitespace-normal">
-                        <div className="flex justify-between space-x-4">
-                          <div className="space-y-1">
-                            <p className="text-sm font-semibold">{forwarding.name}</p>
-                            <p className="text-sm">
-                              ssh.aoldacloud.com:{forwarding.port} ↔ {forwarding.instance_ip}:22
-                            </p>
-                            <p className="text-xs text-muted-foreground mt-2">{forwarding.created_at} 생성</p>
-                            <p className="text-xs text-muted-foreground">{forwarding.updated_at} 수정</p>
-                          </div>
-                        </div>
-                      </HoverCardContent>
-                    </HoverCard>
-                  </TableCell>
-                  <TableCell>{forwarding.port}</TableCell>
-                  <TableCell>{forwarding.instance_ip}</TableCell>
-                  <TableCell>
-                    <div className="flex justify-center items-center gap-2">
-                      <Button variant="secondary" className="size-8">
-                        <Link to={`./edit/${forwarding.id}`}>
-                          <Pencil />
-                        </Link>
-                      </Button>
-                      <Button variant="secondary" className="size-8">
-                        <Link to={`./delete/${forwarding.id}`}>
-                          <Trash />
-                        </Link>
-                      </Button>
-                    </div>
+              {forwardings === null ? (
+                <>
+                  <TableRow>
+                    <TableCell colSpan={4}>
+                      <Skeleton className="w-full h-[1rem] my-2 rounded-full" />
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell colSpan={4}>
+                      <Skeleton className="w-full h-[1rem] my-2 rounded-full" />
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell colSpan={4}>
+                      <Skeleton className="w-full h-[1rem] my-2 rounded-full" />
+                    </TableCell>
+                  </TableRow>
+                </>
+              ) : forwardings.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center text-muted-foreground">
+                    현재 프로젝트에 등록된 포트포워딩 설정이 없습니다.
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                forwardings.map((forwarding) => (
+                  <TableRow key={forwarding.id}>
+                    <TableCell className="truncate max-w-48">
+                      <HoverCard>
+                        <HoverCardTrigger>{forwarding.name}</HoverCardTrigger>
+                        <HoverCardContent className="w-80 whitespace-normal">
+                          <div className="flex justify-between space-x-4">
+                            <div className="space-y-1">
+                              <p className="text-sm font-semibold">{forwarding.name}</p>
+                              <p className="text-sm">
+                                ssh.aoldacloud.com:{forwarding.serverPort} ↔ {forwarding.instanceIp}:
+                                {forwarding.instancePort}
+                              </p>
+                              <p className="text-xs text-muted-foreground mt-2">{forwarding.createdAt} 생성</p>
+                              <p className="text-xs text-muted-foreground">{forwarding.updatedAt} 수정</p>
+                            </div>
+                          </div>
+                        </HoverCardContent>
+                      </HoverCard>
+                    </TableCell>
+                    <TableCell>{forwarding.serverPort}</TableCell>
+                    <TableCell>{forwarding.instanceIp}</TableCell>
+                    <TableCell>
+                      <div className="flex justify-center items-center gap-2">
+                        <Button variant="secondary" className="size-8">
+                          <Link to={`./edit/${forwarding.id}`}>
+                            <Pencil />
+                          </Link>
+                        </Button>
+                        <Button variant="secondary" className="size-8">
+                          <Link to={`./delete/${forwarding.id}`}>
+                            <Trash />
+                          </Link>
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </CardContent>
