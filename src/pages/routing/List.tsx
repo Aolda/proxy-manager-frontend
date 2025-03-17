@@ -11,16 +11,27 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuthStore } from '@/stores/authStore';
 import { Routing } from '@/types/routing';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+} from '@/components/ui/alert-dialog';
 
 export default function RoutingList() {
   const { authFetch, selectedProject } = useAuthStore();
   const [routings, setRoutings] = useState<Routing[] | null>(null);
+  const [selectedRouting, setSelectedRouting] = useState<Routing | null>(null);
 
   useEffect(() => {
     authFetch(`/api/routings?projectId=${selectedProject?.id}`)
       .then((response) => {
         if (!response.ok) {
-          toast.error('포트포워딩 정보를 조회할 수 없습니다.');
+          toast.error('라우팅 정보를 조회할 수 없습니다.');
           return { contents: [] };
         }
 
@@ -30,6 +41,24 @@ export default function RoutingList() {
         setRoutings(contents);
       });
   }, [authFetch, selectedProject]);
+
+  const handleDelete = () => {
+    if (selectedRouting === null) throw Error('selectedRouting is null');
+
+    authFetch(`/api/routing?routingId=${selectedRouting.id}`, {
+      method: 'DELETE',
+    }).then((response) => {
+      if (!response.ok) {
+        console.error(response);
+        toast.error('라우팅 설정 삭제에 실패했습니다');
+      } else {
+        toast.warning('라우팅 설정이 삭제되었습니다');
+        setRoutings((prev) => prev!.filter((routing) => routing.id !== selectedRouting.id));
+      }
+    });
+
+    setSelectedRouting(null);
+  };
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-6">
@@ -147,10 +176,8 @@ export default function RoutingList() {
                             <Pencil />
                           </Link>
                         </Button>
-                        <Button variant="secondary" className="size-8">
-                          <Link to={`./delete/${routing.id}`}>
-                            <Trash />
-                          </Link>
+                        <Button variant="secondary" className="size-8" onClick={() => setSelectedRouting(routing)}>
+                          <Trash />
                         </Button>
                       </div>
                     </TableCell>
@@ -161,6 +188,21 @@ export default function RoutingList() {
           </Table>
         </CardContent>
       </Card>
+
+      <AlertDialog open={selectedRouting !== null} onOpenChange={(open) => open || setSelectedRouting(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>웹 라우팅 설정 삭제</AlertDialogTitle>
+            <AlertDialogDescription>
+              정말 '{selectedRouting?.name}' 라우팅 설정을 삭제하시겠습니까?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>취소</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete}>삭제</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
