@@ -1,48 +1,114 @@
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router';
+import { useForm, useWatch } from 'react-hook-form';
+import { Check, X } from 'lucide-react';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Link } from 'react-router';
-import { useForm } from 'react-hook-form';
-import { Check, X } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
-import { toast } from 'sonner';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Certificate } from '@/types/certificate';
+import { useAuthStore } from '@/stores/authStore';
+import useDebounce from '@/hooks/useDebounce';
 
-const formSchema = z.object({
-  name: z.string({ required_error: '서버 이름을 입력해주세요' }).min(1, { message: '서버 이름을 입력해주세요' }),
-  domain: z
-    .string({ required_error: '도메인 주소를 입력해주세요' })
-    .regex(/^(?=.{1,253}$)(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/, {
-      message: '올바른 도메인 주소를 입력해주세요',
-    }),
-  instance_ip: z
-    .string({ required_error: '인스턴스 IP를 입력해주세요' })
-    .regex(/^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$/, {
-      message: '올바른 IP 주소를 입력해주세요',
-    })
-    .startsWith('10.16.', { message: '인스턴스 IP는 10.16.0.0/16 대역을 사용해야 합니다' }),
-  enable_ssl: z.boolean(),
-  enable_cache: z.boolean(),
-});
+const formSchema = z
+  .object({
+    name: z.string({ required_error: '서버 이름을 입력해주세요' }).min(1, { message: '서버 이름을 입력해주세요' }),
+    domain: z
+      .string({ required_error: '도메인 주소를 입력해주세요' })
+      .regex(/^(?=.{1,253}$)(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/, {
+        message: '올바른 도메인 주소를 입력해주세요',
+      }),
+    ip: z
+      .string({ required_error: '인스턴스 IP를 입력해주세요' })
+      .regex(/^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$/, {
+        message: '올바른 IP 주소를 입력해주세요',
+      })
+      .startsWith('10.16.', { message: '인스턴스 IP는 10.16.0.0/16 대역을 사용해야 합니다' }),
+    port: z.coerce
+      .number({ invalid_type_error: '포트 번호를 입력해주세요' })
+      .min(1, { message: '포트 번호를 입력해주세요' })
+      .max(65535, { message: '올바른 포트 번호를 입력해주세요' }),
+    enableSSL: z.boolean(),
+    certificateId: z.coerce.number().optional(),
+    caching: z.boolean(),
+  })
+  .refine((data) => !data.enableSSL || (data.enableSSL && data.certificateId !== undefined), {
+    message: 'SSL 인증서를 선택해주세요',
+    path: ['certificateId'],
+  });
 
 export default function RoutingCreate() {
+  const navigate = useNavigate();
+  const { authFetch, selectedProject } = useAuthStore();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: '',
-      domain: '',
-      instance_ip: '',
-      enable_ssl: false,
-      enable_cache: false,
+      name: undefined,
+      domain: undefined,
+      ip: undefined,
+      port: undefined,
+      enableSSL: false,
+      certificateId: undefined,
+      caching: false,
     },
   });
+  const domain = useWatch({ control: form.control, name: 'domain' });
+  const enableSSL = useWatch({ control: form.control, name: 'enableSSL' });
+  const debouncedDomain = useDebounce(domain, 500);
+  const [certificates, setCertificates] = useState<Certificate[]>([]);
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log('제출된 데이터:', values);
-    toast.warning('라우팅 설정을 등록합니다');
+  useEffect(() => {
+    if (enableSSL) {
+      authFetch(`/api/certificates?projectId=${selectedProject?.id}&domain=${debouncedDomain}`)
+        .then((response) => {
+          if (!response.ok) {
+            toast.error('SSL 인증서 목록을 불러올 수 없습니다');
+            return { contents: [] };
+          }
+          return response.json();
+        })
+        .then(({ contents }) => {
+          setCertificates(contents);
+        });
+    }
+  }, [authFetch, enableSSL, selectedProject, debouncedDomain]);
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    const { name, domain, ip, port, enableSSL, certificateId, caching } = values;
+    const response = await authFetch(`/api/routing?projectId=${selectedProject?.id}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name,
+        domain,
+        ip,
+        port,
+        certificateId: enableSSL ? certificateId : -1,
+        caching,
+      }),
+    });
+
+    if (!response.ok) {
+      console.error(response);
+      toast.error('라우팅 설정을 등록할 수 없습니다');
+    } else {
+      toast.success('라우팅 설정을 등록합니다');
+      navigate('/routing');
+    }
   }
 
   return (
@@ -91,7 +157,7 @@ export default function RoutingCreate() {
 
                 <FormField
                   control={form.control}
-                  name="instance_ip"
+                  name="ip"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel required>인스턴스 IP</FormLabel>
@@ -99,6 +165,21 @@ export default function RoutingCreate() {
                         <Input placeholder="10.16.x.x" {...field} />
                       </FormControl>
                       <FormDescription>인스턴스 IP는 10.16.0.0/16 대역을 사용합니다</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="port"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel required>인스턴스 포트</FormLabel>
+                      <FormControl>
+                        <Input type="number" placeholder="8080" {...field} />
+                      </FormControl>
+                      <FormDescription>연결할 웹 서비스의 포트 번호를 입력해주세요</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -114,7 +195,7 @@ export default function RoutingCreate() {
             <CardContent className="space-y-4">
               <FormField
                 control={form.control}
-                name="enable_ssl"
+                name="enableSSL"
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-center justify-between">
                     <div className="space-y-0.5">
@@ -134,11 +215,43 @@ export default function RoutingCreate() {
                 )}
               />
 
+              {form.watch('enableSSL') && (
+                <FormField
+                  control={form.control}
+                  name="certificateId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <Select onValueChange={field.onChange}>
+                        <FormControl>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="SSL 인증서 선택" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectGroup>
+                            {certificates.length === 0 ? (
+                              <SelectLabel className="text-muted-foreground">
+                                사용 가능한 SSL 인증서가 없습니다.
+                              </SelectLabel>
+                            ) : (
+                              certificates.map((certificate) => (
+                                <SelectItem value={certificate.id.toString()}>{certificate.domain}</SelectItem>
+                              ))
+                            )}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+
               <Separator />
 
               <FormField
                 control={form.control}
-                name="enable_cache"
+                name="caching"
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-center justify-between">
                     <div className="space-y-0.5">
