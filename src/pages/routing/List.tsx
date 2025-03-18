@@ -92,6 +92,7 @@ export default function RoutingList() {
                 <TableHead className="w-48">이름</TableHead>
                 <TableHead>도메인</TableHead>
                 <TableHead>인스턴스 IP</TableHead>
+                <TableHead>포트</TableHead>
                 <TableHead className="w-32 min-w-32 text-center">기타 설정</TableHead>
                 <TableHead className="w-32 min-w-32 text-center">작업</TableHead>
               </TableRow>
@@ -100,24 +101,24 @@ export default function RoutingList() {
               {routings === null ? (
                 <>
                   <TableRow>
-                    <TableCell colSpan={4}>
+                    <TableCell colSpan={6}>
                       <Skeleton className="w-full h-[1rem] my-2 rounded-full" />
                     </TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell colSpan={4}>
+                    <TableCell colSpan={6}>
                       <Skeleton className="w-full h-[1rem] my-2 rounded-full" />
                     </TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell colSpan={4}>
+                    <TableCell colSpan={6}>
                       <Skeleton className="w-full h-[1rem] my-2 rounded-full" />
                     </TableCell>
                   </TableRow>
                 </>
               ) : routings.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center text-muted-foreground">
+                  <TableCell colSpan={6} className="text-center text-muted-foreground">
                     현재 프로젝트에 등록된 웹 프록시 설정이 없습니다.
                   </TableCell>
                 </TableRow>
@@ -132,7 +133,7 @@ export default function RoutingList() {
                             <div className="space-y-1">
                               <p className="text-sm font-semibold">{routing.name}</p>
                               <p className="text-sm">
-                                {routing.domain} ({routing.ip})
+                                {routing.domain} ({routing.ip}:{routing.port})
                               </p>
                               <p className="text-xs text-muted-foreground mt-2">{routing.createdAt} 생성</p>
                               <p className="text-xs text-muted-foreground">{routing.updatedAt} 수정</p>
@@ -143,6 +144,7 @@ export default function RoutingList() {
                     </TableCell>
                     <TableCell>{routing.domain}</TableCell>
                     <TableCell>{routing.ip}</TableCell>
+                    <TableCell>{routing.port}</TableCell>
                     <TableCell>
                       <div className="flex justify-center items-center gap-1">
                         {routing.certificateId !== undefined ? (
