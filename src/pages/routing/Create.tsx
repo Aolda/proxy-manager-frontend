@@ -103,8 +103,13 @@ export default function RoutingCreate() {
     });
 
     if (!response.ok) {
-      console.error(response);
-      toast.error('라우팅 설정을 등록할 수 없습니다');
+      const { code } = await response.json();
+      if (code == 'DUPLICATED_DOMAIN_NAME') {
+        form.setError('domain', { type: 'custom', message: '이미 사용중인 도메인입니다' });
+        toast.error('이미 사용중인 도메인입니다');
+      } else {
+        toast.error('라우팅 설정을 등록할 수 없습니다');
+      }
     } else {
       toast.success('라우팅 설정을 등록합니다');
       navigate('/routing');
