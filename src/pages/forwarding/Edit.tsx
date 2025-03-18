@@ -39,9 +39,9 @@ export default function ForwardingEdit() {
     authFetch(`/api/forwarding?forwardingId=${id}`)
       .then((response) => {
         if (!response.ok) {
-          console.error(response);
           throw Error();
         }
+
         return response.json();
       })
       .then(({ name, serverPort, instanceIp }) => {
@@ -55,7 +55,7 @@ export default function ForwardingEdit() {
         console.error(error);
         toast.error('포트포워딩 정보를 조회할 수 없습니다.');
       });
-  });
+  }, []);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (!initialData.current) return;
@@ -74,8 +74,6 @@ export default function ForwardingEdit() {
     });
 
     if (!response.ok) {
-      console.error(response);
-
       const { code } = await response.json();
       if (code == 'DUPLICATED_INSTANCE_INFO') {
         form.setError('instanceIp', { type: 'custom' });
