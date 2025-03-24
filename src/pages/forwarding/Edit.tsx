@@ -38,9 +38,7 @@ export default function ForwardingEdit() {
   useEffect(() => {
     authFetch(`/api/forwarding?forwardingId=${id}`)
       .then((response) => {
-        if (!response.ok) {
-          throw Error();
-        }
+        if (!response.ok) throw Error(`포트포워딩 정보 조회 실패: ${response.status}`);
 
         return response.json();
       })

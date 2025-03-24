@@ -78,10 +78,7 @@ export default function RoutingEdit() {
   useEffect(() => {
     authFetch(`/api/routing?routingId=${id}`)
       .then((response) => {
-        if (!response.ok) {
-          console.error(response);
-          throw Error();
-        }
+        if (!response.ok) throw Error(`라우팅 정보 조회 실패: ${response.status}`);
 
         return response.json();
       })
@@ -116,14 +113,16 @@ export default function RoutingEdit() {
     if (enableSSL) {
       authFetch(`/api/certificates?projectId=${selectedProject?.id}&domain=${debouncedDomain}`)
         .then((response) => {
-          if (!response.ok) {
-            toast.error('SSL 인증서 목록을 불러올 수 없습니다');
-            return { contents: [] };
-          }
+          if (!response.ok) throw Error(`SSL 인증서 목록 조회 실패: ${response.status}`);
+
           return response.json();
         })
         .then(({ contents }) => {
           setCertificates(contents);
+        })
+        .catch((error) => {
+          console.error(error);
+          toast.error('SSL 인증서 목록을 불러올 수 없습니다.');
         });
     }
   }, [authFetch, enableSSL, selectedProject, debouncedDomain]);

@@ -30,15 +30,16 @@ export default function RoutingList() {
   useEffect(() => {
     authFetch(`/api/routings?projectId=${selectedProject?.id}`)
       .then((response) => {
-        if (!response.ok) {
-          toast.error('라우팅 정보를 조회할 수 없습니다.');
-          return { contents: [] };
-        }
+        if (!response.ok) throw Error(`라우팅 목록 조회 실패: ${response.status}`);
 
         return response.json();
       })
       .then(({ contents }) => {
         setRoutings(contents);
+      })
+      .catch((error) => {
+        console.error(error);
+        toast.error('라우팅 정보를 조회할 수 없습니다.');
       });
   }, [authFetch, selectedProject]);
 
