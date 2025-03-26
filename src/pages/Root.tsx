@@ -11,7 +11,7 @@ export default function Root() {
         <SiteHeader />
         <div className="flex flex-1">
           <AppSidebar />
-          <SidebarInset>
+          <SidebarInset className="overflow-hidden">
             <Outlet />
           </SidebarInset>
         </div>

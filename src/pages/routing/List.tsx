@@ -63,18 +63,18 @@ export default function RoutingList() {
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-6">
-      <div className="flex justify-between mb-2">
+      <div className="flex flex-col sm:flex-row gap-4 justify-between mb-2">
         <div>
           <h1 className="scroll-m-20 text-3xl font-semibold first:mt-0">웹 라우팅 설정</h1>
           {routings === null ? (
-            <Skeleton className="w-[24rem] h-[1rem] mt-2 rounded-full" />
+            <Skeleton className="w-[18rem] h-[1rem] mt-2 rounded-full" />
           ) : (
             <p className="mt-1 text-base text-gray-500">
               <p className="mt-1 text-base text-gray-500">현재 {routings.length}개의 웹 프록시가 설정되어 있습니다.</p>
             </p>
           )}
         </div>
-        <Button className="ml-2" asChild>
+        <Button asChild>
           <Link to="./create">
             <Plus className="h-4 w-4" /> 새 프록시 추가
           </Link>

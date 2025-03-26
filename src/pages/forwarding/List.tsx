@@ -62,18 +62,18 @@ export default function ForwardingList() {
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-6">
-      <div className="flex justify-between mb-2">
+      <div className="flex flex-col sm:flex-row gap-4 justify-between mb-2">
         <div>
           <h1 className="scroll-m-20 text-3xl font-semibold first:mt-0">SSH 포트포워딩 설정</h1>
           {forwardings === null ? (
-            <Skeleton className="w-[24rem] h-[1rem] mt-2 rounded-full" />
+            <Skeleton className="w-[18rem] h-[1rem] mt-2 rounded-full" />
           ) : (
             <p className="mt-1 text-base text-gray-500">
               현재 {forwardings?.length}개의 SSH 포트포워딩이 설정되어 있습니다.
             </p>
           )}
         </div>
-        <Button className="ml-2" asChild>
+        <Button asChild>
           <Link to="./create">
             <Plus className="h-4 w-4" /> 새 포트포워딩 추가
           </Link>
