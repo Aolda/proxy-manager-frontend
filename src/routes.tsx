@@ -11,6 +11,7 @@ import CertificateCreate from './pages/certificate/Create';
 import ForwardingList from '@/pages/forwarding/List';
 import ForwardingCreate from './pages/forwarding/Create';
 import ForwardingEdit from './pages/forwarding/Edit';
+import LogList from './pages/log/List';
 
 export default function AppRoutes() {
   return (
@@ -31,6 +32,9 @@ export default function AppRoutes() {
           <Route index element={<ForwardingList />} />
           <Route path="create" element={<ForwardingCreate />} />
           <Route path="edit/:id" element={<ForwardingEdit />} />
+        </Route>
+        <Route path="log">
+          <Route index element={<LogList />} />
         </Route>
         <Route path="*" element={<NotFound />} />
       </Route>
