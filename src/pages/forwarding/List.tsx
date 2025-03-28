@@ -74,7 +74,7 @@ export default function ForwardingList() {
           )}
         </div>
         <Button asChild>
-          <Link to="./create">
+          <Link to="./create" className={selectedProject?.role !== 'admin' ? 'opacity-50 pointer-events-none' : ''}>
             <Plus className="h-4 w-4" /> 새 포트포워딩 추가
           </Link>
         </Button>
@@ -145,12 +145,13 @@ export default function ForwardingList() {
                     <TableCell>{forwarding.instanceIp}</TableCell>
                     <TableCell>
                       <div className="flex justify-center items-center gap-2">
-                        <Button variant="secondary" className="size-8">
+                        <Button disabled={selectedProject?.role !== 'admin'} variant="secondary" className="size-8">
                           <Link to={`./edit/${forwarding.id}`}>
                             <Pencil />
                           </Link>
                         </Button>
                         <Button
+                          disabled={selectedProject?.role !== 'admin'}
                           variant="secondary"
                           className="size-8"
                           onClick={() => setSelectedForwarding(forwarding)}

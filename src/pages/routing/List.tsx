@@ -9,8 +9,6 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/h
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useAuthStore } from '@/stores/authStore';
-import { Routing } from '@/types/routing';
 import {
   AlertDialog,
   AlertDialogContent,
@@ -21,6 +19,8 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
 } from '@/components/ui/alert-dialog';
+import { useAuthStore } from '@/stores/authStore';
+import { Routing } from '@/types/routing';
 
 export default function RoutingList() {
   const { authFetch, selectedProject } = useAuthStore();
@@ -75,7 +75,7 @@ export default function RoutingList() {
           )}
         </div>
         <Button asChild>
-          <Link to="./create">
+          <Link to="./create" className={selectedProject?.role !== 'admin' ? 'opacity-50 pointer-events-none' : ''}>
             <Plus className="h-4 w-4" /> 새 프록시 추가
           </Link>
         </Button>
@@ -174,12 +174,17 @@ export default function RoutingList() {
                     </TableCell>
                     <TableCell>
                       <div className="flex justify-center items-center gap-2">
-                        <Button variant="secondary" className="size-8">
+                        <Button disabled={selectedProject?.role !== 'admin'} variant="secondary" className="size-8">
                           <Link to={`./edit/${routing.id}`}>
                             <Pencil />
                           </Link>
                         </Button>
-                        <Button variant="secondary" className="size-8" onClick={() => setSelectedRouting(routing)}>
+                        <Button
+                          disabled={selectedProject?.role !== 'admin'}
+                          variant="secondary"
+                          className="size-8"
+                          onClick={() => setSelectedRouting(routing)}
+                        >
                           <Trash />
                         </Button>
                       </div>

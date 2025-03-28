@@ -1,11 +1,12 @@
+import { Link } from 'react-router';
 import { Filter, Plus, Trash, HardDrive, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import { Input } from '@/components/ui/input';
-import { Link } from 'react-router';
 import { Badge } from '@/components/ui/badge';
+import { useAuthStore } from '@/stores/authStore';
 
 const certificates = [
   {
@@ -47,6 +48,8 @@ const certificates = [
 ];
 
 export default function CertificateList() {
+  const { selectedProject } = useAuthStore();
+
   return (
     <div className="flex flex-1 flex-col gap-4 p-6">
       <div className="flex flex-col sm:flex-row gap-4 justify-between mb-2">
@@ -55,7 +58,7 @@ export default function CertificateList() {
           <p className="mt-1 text-base text-gray-500">현재 {certificates.length}개의 SSL 인증서가 등록되어 있습니다.</p>
         </div>
         <Button asChild>
-          <Link to="./create">
+          <Link to="./create" className={selectedProject?.role !== 'admin' ? 'opacity-50 pointer-events-none' : ''}>
             <Plus className="h-4 w-4" /> 새 인증서 추가
           </Link>
         </Button>
@@ -125,7 +128,7 @@ export default function CertificateList() {
                   </TableCell>
                   <TableCell>
                     <div className="flex justify-center items-center gap-2">
-                      <Button variant="secondary" className="size-8">
+                      <Button disabled={selectedProject?.role !== 'admin'} variant="secondary" className="size-8">
                         <Link to={`./delete/${certificate.id}`}>
                           <Trash />
                         </Link>

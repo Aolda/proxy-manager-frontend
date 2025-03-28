@@ -109,6 +109,8 @@ export default function RoutingCreate() {
       if (code == 'DUPLICATED_DOMAIN_NAME') {
         form.setError('domain', { type: 'custom', message: '이미 사용중인 도메인입니다' });
         toast.error('이미 사용중인 도메인입니다');
+      } else if (code == 'UNAUTHORIZED_USER') {
+        toast.error('권한이 없는 사용자입니다');
       } else {
         toast.error('라우팅 설정을 등록할 수 없습니다');
       }

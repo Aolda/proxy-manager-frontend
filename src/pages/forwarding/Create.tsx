@@ -61,6 +61,8 @@ export default function ForwardingCreate() {
       } else if (code == 'DUPLICATED_SERVER_PORT') {
         form.setError('serverPort', { type: 'custom' });
         toast.error('이미 사용 중인 포트 번호입니다');
+      } else if (code == 'UNAUTHORIZED_USER') {
+        toast.error('권한이 없는 사용자입니다');
       } else {
         toast.error('포트포워딩 설정 등록에 실패했습니다');
       }
