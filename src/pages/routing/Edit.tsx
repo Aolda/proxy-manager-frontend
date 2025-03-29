@@ -151,6 +151,8 @@ export default function RoutingEdit() {
       if (code == 'DUPLICATED_DOMAIN_NAME') {
         form.setError('domain', { type: 'custom' });
         toast.error('이미 사용중인 도메인입니다');
+      } else if (code == 'NOT_FOUND_FORWARDING') {
+        toast.error('서버 오류가 발생했습니다. 관리자에게 문의하세요.');
       } else {
         toast.error('라우팅 설정 수정에 실패하였습니다');
       }

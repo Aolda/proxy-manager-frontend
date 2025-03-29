@@ -8,25 +8,13 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Log, LogListResponse } from '@/types/log';
+import { Log, LogListResponse, ActionLabels, TypeLabels } from '@/types/log';
 
 interface ProjectInfo {
   routing: number;
   forwarding: number;
   certificate: number;
 }
-
-const ACTION = {
-  CREATE: '생성',
-  UPDATE: '수정',
-  DELETE: '삭제',
-};
-
-const TYPE = {
-  ROUTING: '라우팅',
-  CERTIFICATE: '인증서',
-  FORWARDING: '포워딩',
-};
 
 export default function Home() {
   const { authFetch, selectedProject } = useAuthStore();
@@ -184,8 +172,8 @@ export default function Home() {
                     <TableCell>{log.createdAt}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <Badge variant="default">{TYPE[log.type]}</Badge>
-                        <Badge variant="secondary">{ACTION[log.action]}</Badge>
+                        <Badge variant="default">{TypeLabels[log.type]}</Badge>
+                        <Badge variant="secondary">{ActionLabels[log.action]}</Badge>
                         <div>{log.description.split('\n').join(' / ')}</div>
                       </div>
                     </TableCell>

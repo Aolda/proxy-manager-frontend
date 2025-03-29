@@ -28,7 +28,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
-import { Log, LogListResponse, Action, Type } from '@/types/log';
+import { Log, LogListResponse, Action, Type, ActionLabels, TypeLabels } from '@/types/log';
 
 interface PageInfo {
   first: boolean;
@@ -36,18 +36,6 @@ interface PageInfo {
   totalElements: number;
   totalPages: number;
 }
-
-const ACTION = {
-  CREATE: '생성',
-  UPDATE: '수정',
-  DELETE: '삭제',
-};
-
-const TYPE = {
-  ROUTING: '라우팅',
-  CERTIFICATE: '인증서',
-  FORWARDING: '포워딩',
-};
 
 export default function LogList() {
   const { authFetch, selectedProject } = useAuthStore();
@@ -63,7 +51,7 @@ export default function LogList() {
   useEffect(() => {
     setLogs(null);
 
-    authFetch(`/api/logs?projectId=${selectedProject?.id}&page=${page - 1}&${searchParams.toString().toLowerCase()}`)
+    authFetch(`/api/logs?projectId=${selectedProject?.id}&page=${page - 1}&${searchParams.toString()}`)
       .then((response): Promise<LogListResponse> => {
         if (!response.ok) throw new Error(`로그 목록 조회 실패: (${response.status})`);
 
@@ -114,9 +102,9 @@ export default function LogList() {
                     })
                   }
                 >
-                  <DropdownMenuRadioItem value="ROUTING">라우팅</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="FORWARDING">포워딩</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="CERTIFICATE">인증서</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="routing">라우팅</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="forwarding">포워딩</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="certificate">인증서</DropdownMenuRadioItem>
                 </DropdownMenuRadioGroup>
                 <DropdownMenuSeparator />
                 <DropdownMenuLabel>설정 내용</DropdownMenuLabel>
@@ -131,9 +119,9 @@ export default function LogList() {
                     })
                   }
                 >
-                  <DropdownMenuRadioItem value="CREATE">생성</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="UPDATE">수정</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="DELETE">삭제</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="create">생성</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="update">수정</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="delete">삭제</DropdownMenuRadioItem>
                 </DropdownMenuRadioGroup>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -163,7 +151,7 @@ export default function LogList() {
                       })
                     }
                   >
-                    {TYPE[type]}
+                    {TypeLabels[type]}
                     <X className="cursor-pointer" />
                   </Badge>
                 )}
@@ -179,7 +167,7 @@ export default function LogList() {
                       })
                     }
                   >
-                    {ACTION[action]}
+                    {ActionLabels[action]}
                     <X className="cursor-pointer" />
                   </Badge>
                 )}
@@ -234,8 +222,8 @@ export default function LogList() {
                     <TableCell>{log.createdAt}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <Badge variant="default">{TYPE[log.type]}</Badge>
-                        <Badge variant="secondary">{ACTION[log.action]}</Badge>
+                        <Badge variant="default">{TypeLabels[log.type]}</Badge>
+                        <Badge variant="secondary">{ActionLabels[log.action]}</Badge>
                         <div>{log.description.split('\n').join(' / ')}</div>
                       </div>
                     </TableCell>
