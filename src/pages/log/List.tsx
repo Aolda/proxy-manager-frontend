@@ -51,7 +51,11 @@ export default function LogList() {
   useEffect(() => {
     setLogs(null);
 
-    authFetch(`/api/logs?projectId=${selectedProject?.id}&page=${page - 1}&${searchParams.toString()}`)
+    const apiSearchParams = new URLSearchParams(searchParams);
+    apiSearchParams.set('page', `${page - 1}`);
+    apiSearchParams.set('projectId', selectedProject?.id || '');
+
+    authFetch(`/api/logs?${apiSearchParams.toString()}`)
       .then((response): Promise<LogListResponse> => {
         if (!response.ok) throw new Error(`로그 목록 조회 실패: (${response.status})`);
 
