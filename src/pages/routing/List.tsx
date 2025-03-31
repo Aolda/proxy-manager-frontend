@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 import { Filter, Plus, Check, X, Pencil, Trash } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -24,11 +24,15 @@ import { Routing } from '@/types/routing';
 
 export default function RoutingList() {
   const { authFetch, selectedProject } = useAuthStore();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [routings, setRoutings] = useState<Routing[] | null>(null);
   const [selectedRouting, setSelectedRouting] = useState<Routing | null>(null);
 
   useEffect(() => {
-    authFetch(`/api/routings?projectId=${selectedProject?.id}`)
+    const apiSearchParams = new URLSearchParams(searchParams);
+    apiSearchParams.set('projectId', selectedProject?.id || '');
+
+    authFetch(`/api/routings?${apiSearchParams.toString()}`)
       .then((response) => {
         if (!response.ok) throw Error(`라우팅 목록 조회 실패: ${response.status}`);
 
@@ -41,7 +45,7 @@ export default function RoutingList() {
         console.error(error);
         toast.error('라우팅 정보를 조회할 수 없습니다.');
       });
-  }, [authFetch, selectedProject]);
+  }, [authFetch, selectedProject, searchParams]);
 
   const handleDelete = () => {
     if (selectedRouting === null) throw Error('selectedRouting is null');
@@ -82,11 +86,30 @@ export default function RoutingList() {
       </div>
       <Card>
         <CardContent>
-          <div className="flex w-full items-center space-x-2 mb-4">
-            <Filter className="mr-3" />
-            <Input placeholder="이름, 도메인, 인스턴스 IP로 검색..." />
-            <Button variant="secondary">검색</Button>
-          </div>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.currentTarget);
+              const query = formData.get('query')?.toString();
+              if (query) {
+                setSearchParams({ query });
+              } else {
+                setSearchParams({});
+              }
+            }}
+          >
+            <div className="flex w-full items-center space-x-2 mb-4">
+              <Filter className="mr-3" />
+              <Input
+                name="query"
+                placeholder="이름, 도메인, 인스턴스 IP로 검색..."
+                defaultValue={searchParams.get('query') || ''}
+              />
+              <Button type="submit" variant="secondary">
+                검색
+              </Button>
+            </div>
+          </form>
           <Table>
             <TableHeader>
               <TableRow>
