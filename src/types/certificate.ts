@@ -5,4 +5,5 @@ export interface Certificate {
   createdAt: string;
   updatedAt: string;
   expiresAt: string;
+  dnsChallenge: string | null;
 }

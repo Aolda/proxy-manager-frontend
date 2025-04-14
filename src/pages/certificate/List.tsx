@@ -1,61 +1,55 @@
-import { Link } from 'react-router';
+import { useState, useEffect } from 'react';
+import { Link, useSearchParams } from 'react-router';
 import { Filter, Plus, Trash, HardDrive, Globe } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useAuthStore } from '@/stores/authStore';
-
-const certificates = [
-  {
-    id: 1,
-    domain: '*.aoldacloud.com',
-    created_at: '2021-09-01 11:43:00',
-    updated_at: '2021-09-01 12:00:00',
-    email: 'admin@aoldacloud.com',
-    dns_challenge: 'cloudflare:gFMEHqxje9DPRHgyYgIVlRCkp2btVFTOkkcL1HlC1PlCsgjZK0sk9IgXgeLtvg0M',
-    expires_at: '2022-09-01 12:00:00',
-  },
-  {
-    id: 2,
-    domain: '*.ajou.app',
-    created_at: '2021-09-01 12:00:00',
-    updated_at: '2021-09-01 12:01:00',
-    email: 'admin@aoldacloud.com',
-    dns_challenge: 'cloudflare:gFMEHqxje9DPRHgyYgIVlRCkp2btVFTOkkcL1HlC1PlCsgjZK0sk9IgXgeLtvg0M',
-    expires_at: '2022-09-01 12:01:00',
-  },
-  {
-    id: 3,
-    domain: 'blog.username.blog',
-    created_at: '2021-09-01 12:01:00',
-    updated_at: '2021-09-01 13:00:00',
-    email: 'username@example.com',
-    dns_challenge: 'cloudflare:DFrPF3Rp70aUJOekkXobvx5yTzYGxo5cGvHJsPX3fKxVJLQsA78GcOL2v9I6Bw9s',
-    expires_at: '2022-09-01 13:00:00',
-  },
-  {
-    id: 4,
-    domain: 'test.aolda.app',
-    created_at: '2021-09-01 13:00:00',
-    updated_at: '2021-09-02 12:00:00',
-    email: 'aolda@example.com',
-    dns_challenge: null,
-    expires_at: '2022-09-02 12:00:00',
-  },
-];
+import { Certificate } from '@/types/certificate';
 
 export default function CertificateList() {
-  const { selectedProject } = useAuthStore();
+  const { selectedProject, authFetch } = useAuthStore();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [certificates, setCertificates] = useState<Certificate[] | null>([]);
+
+  useEffect(() => {
+    setCertificates(null);
+
+    const apiSearchParams = new URLSearchParams(searchParams);
+    apiSearchParams.set('projectId', selectedProject?.id || '');
+
+    authFetch(`/api/certificates?${apiSearchParams.toString()}`)
+      .then((response) => {
+        if (!response.ok) throw new Error(`인증서 목록 조회 실패: (${response.status})`);
+
+        return response.json();
+      })
+      .then(({ contents }) => {
+        setCertificates(contents);
+      })
+      .catch((error) => {
+        console.error(error);
+        toast.error('인증서 정보를 조회할 수 없습니다.');
+      });
+  }, [authFetch, selectedProject, searchParams]);
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-6">
       <div className="flex flex-col sm:flex-row gap-4 justify-between mb-2">
         <div>
           <h1 className="scroll-m-20 text-3xl font-semibold first:mt-0">SSL 인증서 설정</h1>
-          <p className="mt-1 text-base text-gray-500">현재 {certificates.length}개의 SSL 인증서가 등록되어 있습니다.</p>
+          {certificates === null ? (
+            <Skeleton className="w-[18rem] h-[1rem] mt-2 rounded-full" />
+          ) : (
+            <p className="mt-1 text-base text-gray-500">
+              현재 {certificates.length}개의 SSL 인증서가 등록되어 있습니다.
+            </p>
+          )}
         </div>
         <Button asChild>
           <Link to="./create" className={selectedProject?.role !== 'admin' ? 'opacity-50 pointer-events-none' : ''}>
@@ -65,11 +59,24 @@ export default function CertificateList() {
       </div>
       <Card>
         <CardContent>
-          <div className="flex w-full items-center space-x-2 mb-4">
-            <Filter className="mr-3" />
-            <Input placeholder="도메인, 관리자 이메일로 검색..." />
-            <Button variant="secondary">검색</Button>
-          </div>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.currentTarget);
+              const query = formData.get('query')?.toString();
+              if (query) {
+                setSearchParams({ query });
+              } else {
+                setSearchParams({});
+              }
+            }}
+          >
+            <div className="flex w-full items-center space-x-2 mb-4">
+              <Filter className="mr-3" />
+              <Input placeholder="도메인, 관리자 이메일로 검색..." />
+              <Button variant="secondary">검색</Button>
+            </div>
+          </form>
           <Table>
             <TableHeader>
               <TableRow>
@@ -81,62 +88,88 @@ export default function CertificateList() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {certificates.map((certificate) => (
-                <TableRow key={certificate.id}>
-                  <TableCell>
-                    <HoverCard>
-                      <HoverCardTrigger>{certificate.domain}</HoverCardTrigger>
-                      <HoverCardContent className="w-80 whitespace-normal">
-                        <div className="flex justify-between space-x-4">
-                          <div className="space-y-1">
-                            <p className="text-sm font-semibold">
-                              {certificate.dns_challenge === null ? (
-                                <Badge variant="secondary" className="mr-2">
-                                  HTTP
-                                </Badge>
-                              ) : (
-                                <Badge variant="secondary" className="mr-2">
-                                  DNS
-                                </Badge>
-                              )}
-                              {certificate.domain}
-                            </p>
-                            <p className="text-sm">{certificate.email}</p>
-                            <p className="text-xs text-muted-foreground mt-2">{certificate.created_at} 생성</p>
-                            <p className="text-xs text-muted-foreground">{certificate.updated_at} 수정</p>
-                          </div>
-                        </div>
-                      </HoverCardContent>
-                    </HoverCard>
-                  </TableCell>
-                  <TableCell>{certificate.email}</TableCell>
-                  <TableCell>{certificate.expires_at}</TableCell>
-                  <TableCell>
-                    <div className="flex justify-center items-center gap-1">
-                      {certificate.dns_challenge === null ? (
-                        <Badge variant="secondary">
-                          <Globe className="h-3 w-3" />
-                          HTTP
-                        </Badge>
-                      ) : (
-                        <Badge variant="secondary">
-                          <HardDrive className="h-3 w-3" />
-                          DNS
-                        </Badge>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex justify-center items-center gap-2">
-                      <Button disabled={selectedProject?.role !== 'admin'} variant="secondary" className="size-8">
-                        <Link to={`./delete/${certificate.id}`}>
-                          <Trash />
-                        </Link>
-                      </Button>
-                    </div>
+              {certificates === null ? (
+                <>
+                  <TableRow>
+                    <TableCell colSpan={5}>
+                      <Skeleton className="w-full h-[1rem] my-2 rounded-full" />
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell colSpan={5}>
+                      <Skeleton className="w-full h-[1rem] my-2 rounded-full" />
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell colSpan={5}>
+                      <Skeleton className="w-full h-[1rem] my-2 rounded-full" />
+                    </TableCell>
+                  </TableRow>
+                </>
+              ) : certificates.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center text-muted-foreground">
+                    현재 프로젝트에 등록된 인증서가 없습니다.
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                certificates.map((certificate) => (
+                  <TableRow key={certificate.id}>
+                    <TableCell>
+                      <HoverCard>
+                        <HoverCardTrigger>{certificate.domain}</HoverCardTrigger>
+                        <HoverCardContent className="w-80 whitespace-normal">
+                          <div className="flex justify-between space-x-4">
+                            <div className="space-y-1">
+                              <p className="text-sm font-semibold">
+                                {certificate.dnsChallenge === null ? (
+                                  <Badge variant="secondary" className="mr-2">
+                                    HTTP
+                                  </Badge>
+                                ) : (
+                                  <Badge variant="secondary" className="mr-2">
+                                    DNS
+                                  </Badge>
+                                )}
+                                {certificate.domain}
+                              </p>
+                              <p className="text-sm">{certificate.email}</p>
+                              <p className="text-xs text-muted-foreground mt-2">{certificate.createdAt} 생성</p>
+                              <p className="text-xs text-muted-foreground">{certificate.updatedAt} 수정</p>
+                            </div>
+                          </div>
+                        </HoverCardContent>
+                      </HoverCard>
+                    </TableCell>
+                    <TableCell>{certificate.email}</TableCell>
+                    <TableCell>{certificate.expiresAt}</TableCell>
+                    <TableCell>
+                      <div className="flex justify-center items-center gap-1">
+                        {certificate.dnsChallenge === null ? (
+                          <Badge variant="secondary">
+                            <Globe className="h-3 w-3" />
+                            HTTP
+                          </Badge>
+                        ) : (
+                          <Badge variant="secondary">
+                            <HardDrive className="h-3 w-3" />
+                            DNS
+                          </Badge>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex justify-center items-center gap-2">
+                        <Button disabled={selectedProject?.role !== 'admin'} variant="secondary" className="size-8">
+                          <Link to={`./delete/${certificate.id}`}>
+                            <Trash />
+                          </Link>
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </CardContent>
