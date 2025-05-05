@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { useForm } from 'react-hook-form';
-import { Globe, HardDrive } from 'lucide-react';
+import { Globe, HardDrive, LoaderCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -11,6 +11,7 @@ import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Badge } from '@/components/ui/badge';
+import { useAuthStore } from '@/stores/authStore';
 
 const formSchema = z
   .object({
@@ -24,32 +25,61 @@ const formSchema = z
       .regex(/^(?=.{1,253}$)(?:(?:\*\.)?[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/, {
         message: '올바른 도메인 주소를 입력해주세요',
       }),
-    api_token: z.string(),
-    dns_challenge: z.boolean(),
+    apiToken: z.string(),
+    dnsChallenge: z.boolean(),
   })
-  .refine((data) => !data.dns_challenge || (data.dns_challenge && data.api_token !== ''), {
+  .refine((data) => !data.dnsChallenge || (data.dnsChallenge && data.apiToken !== ''), {
     message: 'Cloudflare API 토큰을 입력해주세요',
-    path: ['api_token'],
+    path: ['apiToken'],
   })
-  .refine((data) => !data.domain.startsWith('*.') || data.dns_challenge, {
+  .refine((data) => !data.domain.startsWith('*.') || data.dnsChallenge, {
     message: '와일드카드 도메인 인증서는 DNS Challenge를 사용해야 합니다',
     path: ['domain'],
   });
 
 export default function CertificateCreate() {
+  const navigate = useNavigate();
+  const { authFetch, selectedProject } = useAuthStore();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: '',
       domain: '',
-      dns_challenge: false,
-      api_token: '',
+      dnsChallenge: false,
+      apiToken: '',
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log('제출된 데이터:', values);
-    toast.warning('신규 SSL 인증서를 등록합니다');
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    const { email, domain, apiToken, dnsChallenge } = values;
+    const challenge = dnsChallenge ? 'dns_cloudflare' : 'http';
+
+    const response = await authFetch(`/api/certificate?projectId=${selectedProject?.id}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email,
+        domain,
+        challenge,
+        apiToken,
+      }),
+    });
+
+    if (!response.ok) {
+      console.error(response);
+
+      const { code } = await response.json();
+      if (code == 'UNAUTHORIZED_USER') {
+        toast.error('권한이 없는 사용자입니다');
+      } else {
+        toast.error('인증서 등록에 실패했습니다');
+      }
+    } else {
+      toast.success('SSL 인증서가 등록되었습니다');
+      navigate('/certificate');
+    }
   }
 
   return (
@@ -108,7 +138,7 @@ export default function CertificateCreate() {
             <CardContent className="space-y-4">
               <FormField
                 control={form.control}
-                name="dns_challenge"
+                name="dnsChallenge"
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-center justify-between">
                     <div className="space-y-0.5">
@@ -137,12 +167,12 @@ export default function CertificateCreate() {
                 )}
               />
 
-              {form.watch('dns_challenge') && (
+              {form.watch('dnsChallenge') && (
                 <>
                   <Separator />
                   <FormField
                     control={form.control}
-                    name="api_token"
+                    name="apiToken"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel required>Cloudflare DNS API 토큰</FormLabel>
@@ -171,7 +201,10 @@ export default function CertificateCreate() {
             <Button variant="outline" asChild>
               <Link to="..">취소</Link>
             </Button>
-            <Button type="submit">저장</Button>
+            <Button type="submit" disabled={form.formState.isSubmitting}>
+              {form.formState.isSubmitting && <LoaderCircle className="animate-spin" />}
+              저장
+            </Button>
           </div>
         </form>
       </Form>
