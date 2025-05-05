@@ -122,7 +122,7 @@ export default function CertificateList() {
                           <div className="flex justify-between space-x-4">
                             <div className="space-y-1">
                               <p className="text-sm font-semibold">
-                                {certificate.dnsChallenge === null ? (
+                                {certificate.challenge === 'http' ? (
                                   <Badge variant="secondary" className="mr-2">
                                     HTTP
                                   </Badge>
@@ -145,7 +145,7 @@ export default function CertificateList() {
                     <TableCell>{certificate.expiresAt}</TableCell>
                     <TableCell>
                       <div className="flex justify-center items-center gap-1">
-                        {certificate.dnsChallenge === null ? (
+                        {certificate.challenge === 'http' ? (
                           <Badge variant="secondary">
                             <Globe className="h-3 w-3" />
                             HTTP
