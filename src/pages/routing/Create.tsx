@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { useForm, useWatch } from 'react-hook-form';
-import { Check, X } from 'lucide-react';
+import { Check, LoaderCircle, X } from 'lucide-react';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
@@ -286,7 +286,10 @@ export default function RoutingCreate() {
             <Button variant="outline" asChild>
               <Link to="..">취소</Link>
             </Button>
-            <Button type="submit">저장</Button>
+            <Button type="submit" disabled={form.formState.isSubmitting}>
+              {form.formState.isSubmitting && <LoaderCircle className="animate-spin" />}
+              저장
+            </Button>
           </div>
         </form>
       </Form>

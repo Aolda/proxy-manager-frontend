@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, useNavigate, useParams } from 'react-router';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
+import { LoaderCircle } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -169,7 +170,10 @@ export default function ForwardingEdit() {
             <Button variant="outline" asChild>
               <Link to="..">취소</Link>
             </Button>
-            <Button type="submit">저장</Button>
+            <Button type="submit" disabled={form.formState.isSubmitting}>
+              {form.formState.isSubmitting && <LoaderCircle className="animate-spin" />}
+              저장
+            </Button>
           </div>
         </form>
       </Form>

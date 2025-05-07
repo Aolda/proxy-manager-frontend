@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, useNavigate } from 'react-router';
 import { useForm } from 'react-hook-form';
+import { LoaderCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -145,7 +146,10 @@ export default function ForwardingCreate() {
             <Button variant="outline" asChild>
               <Link to="..">취소</Link>
             </Button>
-            <Button type="submit">저장</Button>
+            <Button type="submit" disabled={form.formState.isSubmitting}>
+              {form.formState.isSubmitting && <LoaderCircle className="animate-spin" />}
+              저장
+            </Button>
           </div>
         </form>
       </Form>

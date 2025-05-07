@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router';
+import { LoaderCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/authStore';
 import { toast } from 'sonner';
@@ -11,9 +12,12 @@ import { Label } from '@/components/ui/label';
 export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
   const { login } = useAuthStore();
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = React.useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsLoading(true);
+
     const formData = new FormData(e.currentTarget);
     const username = formData.get('username') as string;
     const password = formData.get('password') as string;
@@ -25,6 +29,8 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
       console.error(err);
       toast.error('로그인에 실패했습니다');
     }
+
+    setIsLoading(false);
   };
 
   return (
@@ -45,7 +51,8 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
                 <Label htmlFor="password">비밀번호</Label>
                 <Input id="password" name="password" type="password" placeholder="비밀번호" required />
               </div>
-              <Button type="submit" className="w-full">
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading && <LoaderCircle className="animate-spin" />}
                 로그인
               </Button>
             </div>
