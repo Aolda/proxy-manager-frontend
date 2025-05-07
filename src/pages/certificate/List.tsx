@@ -9,6 +9,16 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/h
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+} from '@/components/ui/alert-dialog';
 import { useAuthStore } from '@/stores/authStore';
 import { Certificate } from '@/types/certificate';
 
@@ -16,6 +26,7 @@ export default function CertificateList() {
   const { selectedProject, authFetch } = useAuthStore();
   const [searchParams, setSearchParams] = useSearchParams();
   const [certificates, setCertificates] = useState<Certificate[] | null>([]);
+  const [selectedCertificate, setSelectedCertificate] = useState<Certificate | null>(null);
 
   useEffect(() => {
     setCertificates(null);
@@ -37,6 +48,22 @@ export default function CertificateList() {
         toast.error('인증서 정보를 조회할 수 없습니다.');
       });
   }, [authFetch, selectedProject, searchParams]);
+
+  const handleDelete = () => {
+    if (selectedCertificate === null) throw Error('selectedCertificate is null');
+
+    authFetch(`/api/certificate?certificateId=${selectedCertificate.id}`, {
+      method: 'DELETE',
+    }).then((response) => {
+      if (!response.ok) {
+        console.error(response);
+        toast.error('SSL 인증서 삭제에 실패했습니다');
+      } else {
+        toast.warning('SSL 인증서가 삭제되었습니다');
+        setCertificates((prev) => prev!.filter((certificate) => certificate.id !== selectedCertificate.id));
+      }
+    });
+  };
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-6">
@@ -160,10 +187,13 @@ export default function CertificateList() {
                     </TableCell>
                     <TableCell>
                       <div className="flex justify-center items-center gap-2">
-                        <Button disabled={selectedProject?.role !== 'admin'} variant="secondary" className="size-8">
-                          <Link to={`./delete/${certificate.id}`}>
-                            <Trash />
-                          </Link>
+                        <Button
+                          disabled={selectedProject?.role !== 'admin'}
+                          variant="secondary"
+                          className="size-8"
+                          onClick={() => setSelectedCertificate(certificate)}
+                        >
+                          <Trash />
                         </Button>
                       </div>
                     </TableCell>
@@ -174,6 +204,21 @@ export default function CertificateList() {
           </Table>
         </CardContent>
       </Card>
+
+      <AlertDialog open={selectedCertificate !== null} onOpenChange={(open) => open || setSelectedCertificate(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>SSL 인증서 삭제</AlertDialogTitle>
+            <AlertDialogDescription>
+              정말 '{selectedCertificate?.domain}' 인증서를 삭제하시겠습니까?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>취소</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete}>삭제</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
