@@ -282,7 +282,10 @@ export default function RoutingEdit() {
                       name="certificateId"
                       render={({ field }) => (
                         <FormItem>
-                          <Select onValueChange={field.onChange}>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={initData.current?.certificateId?.toString()}
+                          >
                             <FormControl>
                               <SelectTrigger className="w-full">
                                 <SelectValue placeholder="SSL 인증서 선택" />
