@@ -135,7 +135,7 @@ export default function CertificateList() {
                 </>
               ) : certificates.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center text-muted-foreground">
+                  <TableCell colSpan={5} className="text-center text-muted-foreground">
                     현재 프로젝트에 등록된 인증서가 없습니다.
                   </TableCell>
                 </TableRow>
