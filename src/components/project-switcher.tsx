@@ -38,7 +38,9 @@ export function ProjectSwitcher() {
                 {selectedProject ? (
                   <>
                     <span className="font-semibold">Project</span>
-                    <span>{selectedProject.name}</span>
+                    <span>
+                      {selectedProject.name} ({selectedProject.role})
+                    </span>
                   </>
                 ) : (
                   <span className="text-muted-foreground">프로젝트를 선택해주세요</span>
@@ -47,7 +49,7 @@ export function ProjectSwitcher() {
               <ChevronsUpDown className="ml-auto" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]" align="start">
+          <DropdownMenuContent className="w-[var(--radix-dropdown-menu-trigger-width)]" align="start">
             {projects.map((project) => (
               <DropdownMenuItem key={project.id} onSelect={() => handleSelectProject(project)}>
                 {project.name} {project.id === selectedProject?.id && <Check className="ml-auto" />}

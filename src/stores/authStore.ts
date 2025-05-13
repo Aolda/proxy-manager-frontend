@@ -7,7 +7,7 @@ export interface AuthStore {
   username: string;
   isAdmin: boolean;
   projects: Project[];
-  selectedProject: (Project & { role?: string }) | null;
+  selectedProject: (Project & { role: string }) | null;
   setSelectedProject: (project: Project) => Promise<void>;
   authFetch: (input: RequestInfo, init?: RequestInit) => Promise<Response>;
   login: (username: string, password: string) => void;
@@ -23,9 +23,6 @@ export const useAuthStore = create<AuthStore>()(
       projects: [],
       selectedProject: null,
       setSelectedProject: async (project) => {
-        set({ selectedProject: project });
-        console.log(project);
-
         const response = await fetch(`/api/auth/role?projectId=${project.id}`, {
           headers: { 'X-Subject-Token': get().token! },
         });
