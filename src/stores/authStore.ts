@@ -56,7 +56,7 @@ export const useAuthStore = create<AuthStore>()(
         const { isAdmin, projects } = await response.json();
 
         set({ token, username, isAdmin, projects });
-        get().setSelectedProject(projects[0]);
+        await get().setSelectedProject(projects[0]);
       },
       logout: () => set({ token: null, username: '', isAdmin: false, projects: [], selectedProject: null }),
     }),
