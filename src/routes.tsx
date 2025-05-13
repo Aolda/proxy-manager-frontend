@@ -1,4 +1,5 @@
 import { Routes, Route } from 'react-router';
+import ProtectedRoute from '@/components/ProtectedRoute';
 import Root from '@/pages/Root';
 import NotFound from '@/pages/NotFound';
 import Home from '@/pages/Home';
@@ -17,25 +18,29 @@ export default function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<Root />}>
-        <Route index element={<Home />} />
         <Route path="login" element={<Login />} />
-        <Route path="routing">
-          <Route index element={<RoutingList />} />
-          <Route path="create" element={<RoutingCreate />} />
-          <Route path="edit/:id" element={<RoutingEdit />} />
+
+        <Route element={<ProtectedRoute />}>
+          <Route index element={<Home />} />
+          <Route path="routing">
+            <Route index element={<RoutingList />} />
+            <Route path="create" element={<RoutingCreate />} />
+            <Route path="edit/:id" element={<RoutingEdit />} />
+          </Route>
+          <Route path="certificate">
+            <Route index element={<CertificateList />} />
+            <Route path="create" element={<CertificateCreate />} />
+          </Route>
+          <Route path="forwarding">
+            <Route index element={<ForwardingList />} />
+            <Route path="create" element={<ForwardingCreate />} />
+            <Route path="edit/:id" element={<ForwardingEdit />} />
+          </Route>
+          <Route path="log">
+            <Route index element={<LogList />} />
+          </Route>
         </Route>
-        <Route path="certificate">
-          <Route index element={<CertificateList />} />
-          <Route path="create" element={<CertificateCreate />} />
-        </Route>
-        <Route path="forwarding">
-          <Route index element={<ForwardingList />} />
-          <Route path="create" element={<ForwardingCreate />} />
-          <Route path="edit/:id" element={<ForwardingEdit />} />
-        </Route>
-        <Route path="log">
-          <Route index element={<LogList />} />
-        </Route>
+
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
