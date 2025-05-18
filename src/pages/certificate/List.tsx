@@ -144,7 +144,11 @@ export default function CertificateList() {
                   <TableRow key={certificate.id}>
                     <TableCell>
                       <HoverCard>
-                        <HoverCardTrigger>{certificate.domain}</HoverCardTrigger>
+                        <HoverCardTrigger>
+                          <span className={certificate.projectId !== selectedProject?.id ? 'italic' : ''}>
+                            {certificate.domain}
+                          </span>
+                        </HoverCardTrigger>
                         <HoverCardContent className="w-80 whitespace-normal">
                           <div className="flex justify-between space-x-4">
                             <div className="space-y-1">
@@ -188,7 +192,7 @@ export default function CertificateList() {
                     <TableCell>
                       <div className="flex justify-center items-center gap-2">
                         <Button
-                          disabled={selectedProject?.role !== 'admin'}
+                          disabled={selectedProject?.role !== 'admin' || certificate.projectId !== selectedProject.id}
                           variant="secondary"
                           className="size-8"
                           onClick={() => setSelectedCertificate(certificate)}
