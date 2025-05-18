@@ -49,20 +49,24 @@ export default function CertificateList() {
       });
   }, [authFetch, selectedProject, searchParams]);
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (selectedCertificate === null) throw Error('selectedCertificate is null');
 
-    authFetch(`/api/certificate?certificateId=${selectedCertificate.id}`, {
+    const response = await authFetch(`/api/certificate?certificateId=${selectedCertificate.id}`, {
       method: 'DELETE',
-    }).then((response) => {
-      if (!response.ok) {
-        console.error(response);
-        toast.error('SSL 인증서 삭제에 실패했습니다');
-      } else {
-        toast.warning('SSL 인증서가 삭제되었습니다');
-        setCertificates((prev) => prev!.filter((certificate) => certificate.id !== selectedCertificate.id));
-      }
     });
+
+    if (!response.ok) {
+      const { code } = await response.json();
+      if (code == 'UNAUTHORIZED_USER') {
+        toast.error('SSL 인증서를 삭제할 권한이 없습니다');
+      } else {
+        toast.error('SSL 인증서 삭제에 실패했습니다');
+      }
+    } else {
+      toast.warning('SSL 인증서가 삭제되었습니다');
+      setCertificates((prev) => prev!.filter((certificate) => certificate.id !== selectedCertificate.id));
+    }
   };
 
   return (
