@@ -22,6 +22,8 @@ export default function Home() {
   const [projectInfo, setProjectInfo] = useState<ProjectInfo | null>(null);
 
   useEffect(() => {
+    setProjectInfo(null);
+
     authFetch(`/api/main?projectId=${selectedProject?.id}`)
       .then((response) => {
         if (!response.ok) throw new Error(`프로젝트 정보 조회 실패: (${response.status})`);
@@ -38,6 +40,8 @@ export default function Home() {
   }, [authFetch, selectedProject]);
 
   useEffect(() => {
+    setLogs(null);
+
     authFetch(`/api/logs?projectId=${selectedProject?.id}&size=5`)
       .then((response): Promise<LogListResponse> => {
         if (!response.ok) throw new Error(`로그 목록 조회 실패: (${response.status})`);
