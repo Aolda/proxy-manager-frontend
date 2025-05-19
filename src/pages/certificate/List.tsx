@@ -148,10 +148,8 @@ export default function CertificateList() {
                   <TableRow key={certificate.id}>
                     <TableCell>
                       <HoverCard>
-                        <HoverCardTrigger>
-                          <span className={certificate.projectId !== selectedProject?.id ? 'italic' : ''}>
-                            {certificate.domain}
-                          </span>
+                        <HoverCardTrigger className={certificate.projectId !== selectedProject?.id ? 'opacity-70' : ''}>
+                          {certificate.domain}
                         </HoverCardTrigger>
                         <HoverCardContent className="w-80 whitespace-normal">
                           <div className="flex justify-between space-x-4">
@@ -176,9 +174,13 @@ export default function CertificateList() {
                         </HoverCardContent>
                       </HoverCard>
                     </TableCell>
-                    <TableCell>{certificate.email}</TableCell>
-                    <TableCell>{certificate.expiresAt}</TableCell>
-                    <TableCell>
+                    <TableCell className={certificate.projectId !== selectedProject?.id ? 'opacity-70' : ''}>
+                      {certificate.email}
+                    </TableCell>
+                    <TableCell className={certificate.projectId !== selectedProject?.id ? 'opacity-70' : ''}>
+                      {certificate.expiresAt}
+                    </TableCell>
+                    <TableCell className={certificate.projectId !== selectedProject?.id ? 'opacity-70' : ''}>
                       <div className="flex justify-center items-center gap-1">
                         {certificate.challenge === 'http' ? (
                           <Badge variant="secondary">
@@ -193,7 +195,7 @@ export default function CertificateList() {
                         )}
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className={certificate.projectId !== selectedProject?.id ? 'opacity-70' : ''}>
                       <div className="flex justify-center items-center gap-2">
                         <Button
                           disabled={selectedProject?.role !== 'admin' || certificate.projectId !== selectedProject.id}
