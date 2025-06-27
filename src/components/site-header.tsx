@@ -30,7 +30,7 @@ export function SiteHeader() {
           <MenuIcon />
         </Button>
         <Link to="/" className="flex items-center gap-2 text-lg font-semibold md:text-base">
-          <span className="whitespace-nowrap">Aolda Cloud</span>
+          <img src="/aolda_logo.svg" alt="Aolda Cloud" className="h-6 w-auto" />
         </Link>
         {token ? (
           <DropdownMenu>
