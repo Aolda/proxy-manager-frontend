@@ -14,7 +14,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://proxy.aoldacloud.com',
+        target: 'https://itda.aoldacloud.com',
         changeOrigin: true,
       },
     },
