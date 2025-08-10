@@ -24,36 +24,42 @@ import { Certificate } from '@/types/certificate';
 import { useAuthStore } from '@/stores/authStore';
 import useDebounce from '@/hooks/useDebounce';
 
-const formSchema = z
-  .object({
-    name: z.string({ required_error: '서버 이름을 입력해주세요' }).min(1, { message: '서버 이름을 입력해주세요' }),
-    domain: z
-      .string({ required_error: '도메인 주소를 입력해주세요' })
-      .regex(/^(?=.{1,253}$)(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/, {
-        message: '올바른 도메인 주소를 입력해주세요',
-      }),
-    ip: z
-      .string({ required_error: '인스턴스 IP를 입력해주세요' })
-      .regex(/^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$/, {
-        message: '올바른 IP 주소를 입력해주세요',
-      })
-      .startsWith('10.16.', { message: '인스턴스 IP는 10.16.0.0/16 대역을 사용해야 합니다' }),
-    port: z.coerce
-      .number({ invalid_type_error: '포트 번호를 입력해주세요' })
-      .min(1, { message: '포트 번호를 입력해주세요' })
-      .max(65535, { message: '올바른 포트 번호를 입력해주세요' }),
-    enableSSL: z.boolean(),
-    certificateId: z.coerce.number().optional(),
-    caching: z.boolean(),
-  })
-  .refine((data) => !data.enableSSL || (data.enableSSL && data.certificateId !== undefined), {
-    message: 'SSL 인증서를 선택해주세요',
-    path: ['certificateId'],
-  });
-
 export default function RoutingCreate() {
   const navigate = useNavigate();
-  const { authFetch, selectedProject } = useAuthStore();
+  const { authFetch, selectedProject, isAdmin } = useAuthStore();
+
+  const formSchema = z
+    .object({
+      name: z.string({ required_error: '서버 이름을 입력해주세요' }).min(1, { message: '서버 이름을 입력해주세요' }),
+      domain: z
+        .string({ required_error: '도메인 주소를 입력해주세요' })
+        .regex(/^(?=.{1,253}$)(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/, {
+          message: '올바른 도메인 주소를 입력해주세요',
+        }),
+      ip: isAdmin
+        ? z
+            .string({ required_error: '인스턴스 IP를 입력해주세요' })
+            .regex(/^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$/, {
+              message: '올바른 IP 주소를 입력해주세요',
+            })
+        : z
+            .string({ required_error: '인스턴스 IP를 입력해주세요' })
+            .regex(/^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$/, {
+              message: '올바른 IP 주소를 입력해주세요',
+            })
+            .startsWith('10.16.', { message: '인스턴스 IP는 10.16.0.0/16 대역을 사용해야 합니다' }),
+      port: z.coerce
+        .number({ invalid_type_error: '포트 번호를 입력해주세요' })
+        .min(1, { message: '포트 번호를 입력해주세요' })
+        .max(65535, { message: '올바른 포트 번호를 입력해주세요' }),
+      enableSSL: z.boolean(),
+      certificateId: z.coerce.number().optional(),
+      caching: z.boolean(),
+    })
+    .refine((data) => !data.enableSSL || (data.enableSSL && data.certificateId !== undefined), {
+      message: 'SSL 인증서를 선택해주세요',
+      path: ['certificateId'],
+    });
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -171,9 +177,11 @@ export default function RoutingCreate() {
                     <FormItem>
                       <FormLabel required>인스턴스 IP</FormLabel>
                       <FormControl>
-                        <Input placeholder="10.16.x.x" {...field} />
+                        <Input placeholder={isAdmin ? '10.16.x.x / 172.16.x.x' : '10.16.x.x'} {...field} />
                       </FormControl>
-                      <FormDescription>인스턴스 IP는 10.16.0.0/16 대역을 사용합니다</FormDescription>
+                      <FormDescription>
+                        {isAdmin ? '[관리자] 모든 IP 대역 설정 가능' : '인스턴스 IP는 10.16.0.0/16 대역을 사용합니다'}
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
