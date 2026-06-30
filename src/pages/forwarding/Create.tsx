@@ -12,16 +12,14 @@ import { useAuthStore } from '@/stores/authStore';
 
 const formSchema = z.object({
   name: z.string({ required_error: '서버 이름을 입력해주세요' }).min(1, { message: '서버 이름을 입력해주세요' }),
-  serverPort: z
-    .number({ required_error: '도메인 주소를 입력해주세요' })
-    .min(20000, { message: '포트 번호는 20000 이상이어야 합니다' })
-    .max(29999, { message: '포트 번호는 29999 이하여야 합니다' }),
   instanceIp: z
     .string({ required_error: '인스턴스 IP를 입력해주세요' })
     .regex(/^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$/, {
       message: '올바른 IP 주소를 입력해주세요',
     })
-    .startsWith('10.16.', { message: '인스턴스 IP는 10.16.0.0/16 대역을 사용해야 합니다' }),
+    .refine((value) => value.startsWith('10.16.') || value.startsWith('10.26.'), {
+      message: '인스턴스 IP는 10.16.0.0/16 또는 10.26.0.0/16 대역을 사용해야 합니다',
+    }),
 });
 
 export default function ForwardingCreate() {
@@ -31,13 +29,12 @@ export default function ForwardingCreate() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
-      serverPort: undefined,
       instanceIp: '',
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    const { name, serverPort, instanceIp } = values;
+    const { name, instanceIp } = values;
 
     const response = await authFetch(`/api/forwarding?projectId=${selectedProject?.id}`, {
       method: 'POST',
@@ -46,7 +43,6 @@ export default function ForwardingCreate() {
       },
       body: JSON.stringify({
         name,
-        serverPort,
         instanceIp,
         instancePort: 22,
       }),
@@ -59,9 +55,6 @@ export default function ForwardingCreate() {
       if (code == 'DUPLICATED_INSTANCE_INFO') {
         form.setError('instanceIp', { type: 'custom' });
         toast.error('이미 존재하는 포트포워딩 설정입니다');
-      } else if (code == 'DUPLICATED_SERVER_PORT') {
-        form.setError('serverPort', { type: 'custom' });
-        toast.error('이미 사용 중인 포트 번호입니다');
       } else if (code == 'UNAUTHORIZED_USER') {
         toast.error('권한이 없는 사용자입니다');
       } else {
@@ -104,36 +97,14 @@ export default function ForwardingCreate() {
 
                 <FormField
                   control={form.control}
-                  name="serverPort"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel required>포트 번호</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          min={20000}
-                          max={29999}
-                          placeholder="20000 ~ 29999"
-                          {...field}
-                          onChange={(e) => field.onChange(+e.target.value)}
-                        />
-                      </FormControl>
-                      <FormDescription>ssh.aoldacloud.com:&lt;포트번호&gt;로 접속 가능합니다</FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
                   name="instanceIp"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel required>인스턴스 IP</FormLabel>
                       <FormControl>
-                        <Input placeholder="10.16.x.x" {...field} />
+                        <Input placeholder="10.16.x.x 또는 10.26.x.x" {...field} />
                       </FormControl>
-                      <FormDescription>인스턴스 IP는 10.16.0.0/16 대역을 사용합니다</FormDescription>
+                      <FormDescription>인스턴스 IP는 provider 대역을 사용합니다</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}

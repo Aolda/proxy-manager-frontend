@@ -27,6 +27,16 @@ export default function ForwardingList() {
   const [forwardings, setForwardings] = useState<Forwarding[] | null>(null);
   const [selectedForwarding, setSelectedForwarding] = useState<Forwarding | null>(null);
 
+  const normalizeForwarding = (forwarding: any): Forwarding => ({
+    id: forwarding.id ?? forwarding.forwarding_id,
+    name: forwarding.name ?? '',
+    serverPort: forwarding.serverPort ?? forwarding.server_port,
+    instanceIp: forwarding.instanceIp ?? forwarding.instance_ip ?? '',
+    instancePort: forwarding.instancePort ?? forwarding.instance_port,
+    createdAt: forwarding.createdAt ?? forwarding.created_at ?? '',
+    updatedAt: forwarding.updatedAt ?? forwarding.updated_at ?? '',
+  });
+
   useEffect(() => {
     const apiSearchParams = new URLSearchParams(searchParams);
     apiSearchParams.set('projectId', selectedProject?.id || '');
@@ -37,8 +47,9 @@ export default function ForwardingList() {
 
         return response.json();
       })
-      .then(({ contents }) => {
-        setForwardings(contents);
+      .then((data) => {
+        const items = Array.isArray(data) ? data : data.contents ?? [];
+        setForwardings(items.map(normalizeForwarding));
       })
       .catch((error) => {
         console.error(error);
