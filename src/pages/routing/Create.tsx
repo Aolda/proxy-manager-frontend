@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
-import { useForm, useWatch } from 'react-hook-form';
-import { Check, LoaderCircle, X } from 'lucide-react';
+import { useFieldArray, useForm, useWatch } from 'react-hook-form';
+import { Check, LoaderCircle, Plus, X } from 'lucide-react';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
@@ -27,6 +27,18 @@ import useDebounce from '@/hooks/useDebounce';
 export default function RoutingCreate() {
   const navigate = useNavigate();
   const { authFetch, selectedProject, isAdmin } = useAuthStore();
+  const ipSchema = isAdmin
+    ? z
+        .string({ required_error: '인스턴스 IP를 입력해주세요' })
+        .regex(/^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$/, {
+          message: '올바른 IP 주소를 입력해주세요',
+        })
+    : z
+        .string({ required_error: '인스턴스 IP를 입력해주세요' })
+        .regex(/^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$/, {
+          message: '올바른 IP 주소를 입력해주세요',
+        })
+        .startsWith('10.16.', { message: '인스턴스 IP는 10.16.0.0/16 대역을 사용해야 합니다' });
 
   const formSchema = z
     .object({
@@ -36,18 +48,7 @@ export default function RoutingCreate() {
         .regex(/^(?=.{1,253}$)(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/, {
           message: '올바른 도메인 주소를 입력해주세요',
         }),
-      ip: isAdmin
-        ? z
-            .string({ required_error: '인스턴스 IP를 입력해주세요' })
-            .regex(/^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$/, {
-              message: '올바른 IP 주소를 입력해주세요',
-            })
-        : z
-            .string({ required_error: '인스턴스 IP를 입력해주세요' })
-            .regex(/^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$/, {
-              message: '올바른 IP 주소를 입력해주세요',
-            })
-            .startsWith('10.16.', { message: '인스턴스 IP는 10.16.0.0/16 대역을 사용해야 합니다' }),
+      ips: z.array(z.object({ value: ipSchema })).min(1, { message: '인스턴스 IP를 입력해주세요' }),
       port: z.coerce
         .number({ invalid_type_error: '포트 번호를 입력해주세요' })
         .min(1, { message: '포트 번호를 입력해주세요' })
@@ -65,13 +66,14 @@ export default function RoutingCreate() {
     defaultValues: {
       name: undefined,
       domain: undefined,
-      ip: undefined,
+      ips: [{ value: '' }],
       port: undefined,
       enableSSL: false,
       certificateId: undefined,
       caching: false,
     },
   });
+  const { fields, append, remove } = useFieldArray({ control: form.control, name: 'ips' });
   const domain = useWatch({ control: form.control, name: 'domain' });
   const enableSSL = useWatch({ control: form.control, name: 'enableSSL' });
   const debouncedDomain = useDebounce(domain, 500);
@@ -96,14 +98,16 @@ export default function RoutingCreate() {
   }, [authFetch, enableSSL, selectedProject, debouncedDomain]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    const { name, domain, ip, port, enableSSL, certificateId, caching } = values;
+    const { name, domain, ips: ipFields, port, enableSSL, certificateId, caching } = values;
+    const ips = ipFields.map(({ value }) => value.trim());
     const response = await authFetch(`/api/routing?projectId=${selectedProject?.id}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         name,
         domain,
-        ip,
+        ip: ips[0],
+        ips,
         port,
         certificateId: enableSSL ? certificateId : -1,
         caching,
@@ -170,22 +174,43 @@ export default function RoutingCreate() {
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="ip"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel required>인스턴스 IP</FormLabel>
-                      <FormControl>
-                        <Input placeholder={isAdmin ? '10.16.x.x / 172.16.x.x' : '10.16.x.x'} {...field} />
-                      </FormControl>
-                      <FormDescription>
-                        {isAdmin ? '[관리자] 모든 IP 대역 설정 가능' : '인스턴스 IP는 10.16.0.0/16 대역을 사용합니다'}
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div className="space-y-2">
+                  <FormLabel required>인스턴스 IP</FormLabel>
+                  {fields.map((field, index) => (
+                    <FormField
+                      key={field.id}
+                      control={form.control}
+                      name={`ips.${index}.value`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <div className="flex gap-2">
+                            <FormControl>
+                              <Input placeholder={isAdmin ? '10.16.x.x / 172.16.x.x' : '10.16.x.x'} {...field} />
+                            </FormControl>
+                            <Button
+                              type="button"
+                              variant="secondary"
+                              className="shrink-0"
+                              disabled={fields.length === 1}
+                              onClick={() => remove(index)}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  ))}
+                  <Button type="button" variant="outline" onClick={() => append({ value: '' })}>
+                    <Plus className="h-4 w-4" /> IP 추가
+                  </Button>
+                  <FormDescription>
+                    {isAdmin
+                      ? '[관리자] 여러 IP를 입력하면 Nginx upstream으로 분산합니다'
+                      : '인스턴스 IP는 10.16.0.0/16 대역을 사용합니다'}
+                  </FormDescription>
+                </div>
 
                 <FormField
                   control={form.control}

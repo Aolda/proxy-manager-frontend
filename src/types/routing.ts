@@ -3,6 +3,7 @@ export interface Routing {
   name: string;
   domain: string;
   ip: string;
+  ips?: string[];
   port: number;
   createdAt: string;
   updatedAt: string;

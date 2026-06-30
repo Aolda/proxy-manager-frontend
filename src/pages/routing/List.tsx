@@ -27,6 +27,7 @@ export default function RoutingList() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [routings, setRoutings] = useState<Routing[] | null>(null);
   const [selectedRouting, setSelectedRouting] = useState<Routing | null>(null);
+  const getRoutingIps = (routing: Routing) => (routing.ips && routing.ips.length > 0 ? routing.ips : [routing.ip]);
 
   useEffect(() => {
     const apiSearchParams = new URLSearchParams(searchParams);
@@ -156,9 +157,8 @@ export default function RoutingList() {
                           <div className="flex justify-between space-x-4">
                             <div className="space-y-1">
                               <p className="text-sm font-semibold">{routing.name}</p>
-                              <p className="text-sm">
-                                {routing.domain} ({routing.ip}:{routing.port})
-                              </p>
+                              <p className="text-sm">{routing.domain}</p>
+                              <p className="text-sm">{getRoutingIps(routing).map((ip) => `${ip}:${routing.port}`).join(', ')}</p>
                               <p className="text-xs text-muted-foreground mt-2">{routing.createdAt} 생성</p>
                               <p className="text-xs text-muted-foreground">{routing.updatedAt} 수정</p>
                             </div>
@@ -167,7 +167,13 @@ export default function RoutingList() {
                       </HoverCard>
                     </TableCell>
                     <TableCell>{routing.domain}</TableCell>
-                    <TableCell>{routing.ip}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        {getRoutingIps(routing).map((ip) => (
+                          <span key={ip}>{ip}</span>
+                        ))}
+                      </div>
+                    </TableCell>
                     <TableCell>{routing.port}</TableCell>
                     <TableCell>
                       <div className="flex justify-center items-center gap-1">
