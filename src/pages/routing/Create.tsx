@@ -26,19 +26,12 @@ import useDebounce from '@/hooks/useDebounce';
 
 export default function RoutingCreate() {
   const navigate = useNavigate();
-  const { authFetch, selectedProject, isAdmin } = useAuthStore();
-  const ipSchema = isAdmin
-    ? z
-        .string({ required_error: '인스턴스 IP를 입력해주세요' })
-        .regex(/^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$/, {
-          message: '올바른 IP 주소를 입력해주세요',
-        })
-    : z
-        .string({ required_error: '인스턴스 IP를 입력해주세요' })
-        .regex(/^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$/, {
-          message: '올바른 IP 주소를 입력해주세요',
-        })
-        .startsWith('10.16.', { message: '인스턴스 IP는 10.16.0.0/16 대역을 사용해야 합니다' });
+  const { authFetch, selectedProject } = useAuthStore();
+  const ipSchema = z
+    .string({ required_error: '인스턴스 IP를 입력해주세요' })
+    .regex(/^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$/, {
+      message: '올바른 IP 주소를 입력해주세요',
+    });
 
   const formSchema = z
     .object({
@@ -185,7 +178,7 @@ export default function RoutingCreate() {
                         <FormItem>
                           <div className="flex gap-2">
                             <FormControl>
-                              <Input placeholder={isAdmin ? '10.16.x.x / 172.16.x.x' : '10.16.x.x'} {...field} />
+                              <Input placeholder="인스턴스 IP" {...field} />
                             </FormControl>
                             <Button
                               type="button"
@@ -206,9 +199,7 @@ export default function RoutingCreate() {
                     <Plus className="h-4 w-4" /> IP 추가
                   </Button>
                   <FormDescription>
-                    {isAdmin
-                      ? '[관리자] 여러 IP를 입력하면 Nginx upstream으로 분산합니다'
-                      : '인스턴스 IP는 10.16.0.0/16 대역을 사용합니다'}
+                    여러 IP를 입력하면 Nginx upstream으로 분산합니다
                   </FormDescription>
                 </div>
 
