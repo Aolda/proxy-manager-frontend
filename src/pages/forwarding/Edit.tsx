@@ -11,6 +11,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useAuthStore } from '@/stores/authStore';
+import {
+  allowedInstanceIpMessage,
+  instanceIpDescription,
+  instanceIpPlaceholder,
+  isAllowedInstanceIp,
+} from '@/config/env';
 
 const formSchema = z.object({
   name: z.string({ required_error: '서버 이름을 입력해주세요' }).min(1, { message: '서버 이름을 입력해주세요' }),
@@ -19,8 +25,8 @@ const formSchema = z.object({
     .regex(/^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$/, {
       message: '올바른 IP 주소를 입력해주세요',
     })
-    .refine((value) => value.startsWith('10.16.') || value.startsWith('10.26.'), {
-      message: '인스턴스 IP는 10.16.0.0/16 또는 10.26.0.0/16 대역을 사용해야 합니다',
+    .refine(isAllowedInstanceIp, {
+      message: allowedInstanceIpMessage,
     }),
 });
 
@@ -128,9 +134,9 @@ export default function ForwardingEdit() {
                       <FormItem>
                         <FormLabel required>인스턴스 IP</FormLabel>
                         <FormControl>
-                          <Input placeholder="10.16.x.x 또는 10.26.x.x" {...field} />
+                          <Input placeholder={instanceIpPlaceholder} {...field} />
                         </FormControl>
-                        <FormDescription>인스턴스 IP는 provider 대역을 사용합니다</FormDescription>
+                        <FormDescription>{instanceIpDescription}</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}

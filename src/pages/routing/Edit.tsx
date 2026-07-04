@@ -24,6 +24,7 @@ import {
 import { Certificate } from '@/types/certificate';
 import { useAuthStore } from '@/stores/authStore';
 import useDebounce from '@/hooks/useDebounce';
+import { instanceIpDescription, instanceIpPlaceholder } from '@/config/env';
 
 export default function RoutingEdit() {
   const navigate = useNavigate();
@@ -237,7 +238,7 @@ export default function RoutingEdit() {
                           <FormItem>
                             <div className="flex gap-2">
                               <FormControl>
-                                <Input placeholder="인스턴스 IP" {...field} />
+                                <Input placeholder={instanceIpPlaceholder} {...field} />
                               </FormControl>
                               <Button
                                 type="button"
@@ -258,7 +259,7 @@ export default function RoutingEdit() {
                       <Plus className="h-4 w-4" /> IP 추가
                     </Button>
                     <FormDescription>
-                      여러 IP를 입력하면 Nginx upstream으로 분산합니다
+                      {instanceIpDescription}. 여러 IP를 입력하면 Nginx upstream으로 분산합니다
                     </FormDescription>
                   </div>
 

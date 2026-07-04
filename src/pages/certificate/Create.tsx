@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Badge } from '@/components/ui/badge';
 import { useAuthStore } from '@/stores/authStore';
+import { publicDnsTargetIp } from '@/config/env';
 
 const formSchema = z
   .object({
@@ -120,9 +121,9 @@ export default function CertificateCreate() {
                       <FormControl>
                         <Input placeholder="example.ajou.app" {...field} />
                       </FormControl>
-                      <FormDescription>
-                        등록할 도메인에 대해 DNS 설정(210.107.196.188)을 먼저 진행해주세요
-                      </FormDescription>
+                      {publicDnsTargetIp && (
+                        <FormDescription>등록할 도메인에 대해 DNS 설정({publicDnsTargetIp})을 먼저 진행해주세요</FormDescription>
+                      )}
                       <FormMessage />
                     </FormItem>
                   )}
